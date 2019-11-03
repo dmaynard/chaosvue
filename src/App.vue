@@ -35,12 +35,12 @@ export default {
   data () {
     return {
       chartValues: [
-        {id: 1, val: 24, color: 'red'},
-        {id: 2, val: 32, color: '#0f0'},
-        {id: 3, val: 66, color: 'rebeccapurple'},
-        {id: 4, val: 1, color: 'green'},
-        {id: 5, val: 28, color: 'blue'},
-        {id: 6, val: 60, color: 'rgba(150, 100, 0, 0.2)'},
+        {id: 0, val: 24, color: 'red'},
+        {id: 1, val: 32, color: '#0f0'},
+        {id: 2, val: 66, color: 'rebeccapurple'},
+        {id: 3, val: 1, color: 'green'},
+        {id: 4, val: 28, color: 'blue'},
+        {id: 5, val: 60, color: 'rgba(150, 100, 150, 1.0)'},
       ]
     }
   },
