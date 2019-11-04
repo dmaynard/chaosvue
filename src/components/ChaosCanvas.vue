@@ -1,6 +1,6 @@
 <template>
-  <div class="my-canvas-wrapper">
-    <canvas ref="my-canvas"></canvas>
+  <div class="chaos-canvas-wrapper">
+    <canvas ref="chaos-canvas"></canvas>
     <slot></slot>
   </div>
 </template>
@@ -28,12 +28,21 @@ export default {
   mounted () {
     // We can't access the rendering context until the canvas is mounted to the DOM.
     // Once we have it, provide it to all child components.
-    this.provider.context = this.$refs['my-canvas'].getContext('2d')
+    this.provider.context = this.$refs['chaos-canvas'].getContext('2d')
 
     // Resize the canvas to fit its parent's width.
     // Normally you'd use a more flexible resize system.
-    this.$refs['my-canvas'].width = this.$refs['my-canvas'].parentElement.clientWidth
-    this.$refs['my-canvas'].height = this.$refs['my-canvas'].parentElement.clientHeight/2;
-  }
+    this.$refs['chaos-canvas'].width = this.$refs['chaos-canvas'].parentElement.clientWidth
+    this.$refs['chaos-canvas'].height = this.$refs['chaos-canvas'].parentElement.clientHeight/2;
+    const self = this;
+
+      var canvasImg = new Image();
+
+      canvasImg.onload = function() {
+          self.provider.context.drawImage(canvasImg, 0, 0);
+      };
+
+      canvasImg.src = "/logo.png";
+}
 }
 </script>

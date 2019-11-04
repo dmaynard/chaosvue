@@ -1,9 +1,11 @@
 <template>
   <div id="app">
-    <h2>Bar Chart Example</h2>
+    <h2>Chaotic Attractor</h2>
     <!-- These are the custom components we'll create -->
     <!-- Values for `my-box` are percentages of the width of the canvas. -->
     <!-- Each bar will take up an equal space of the canvas. -->
+    <chaos-canvas style="width: 100%; height: 300px; background-color:powderblue;">
+    </chaos-canvas>
     <my-canvas style="width: 100%; height: 600px;">
       <my-box
         :key=obj.id
@@ -18,16 +20,19 @@
       >
       </my-box>
     </my-canvas>
+
   </div>
 </template>
 
 <script>
+import ChaosCanvas from './components/ChaosCanvas.vue';
 import MyCanvas from './components/MyCanvas.vue';
 import MyBox from './components/MyBox.vue';
 
 export default {
   name: 'app',
   components: {
+    ChaosCanvas,
     MyCanvas,
     MyBox
   },
