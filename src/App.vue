@@ -6,6 +6,7 @@
     <!-- Each bar will take up an equal space of the canvas. -->
     <chaos-canvas style="width: 100%; height: 300px; background-color:powderblue;">
     </chaos-canvas>
+    <h2>Bar Code Example</h2>
     <my-canvas style="width: 100%; height: 600px;">
       <my-box
         :key=obj.id
@@ -65,7 +66,7 @@ export default {
       if (this.chartValues[selectedVal].val >= 100) dir = -1;
 
 
-    }, 16);
+    }, 100);
   }
 }
 </script>
