@@ -7,7 +7,7 @@
     <chaos-canvas style="width: 100%; height: 300px; background-color:powderblue;">
     </chaos-canvas>
     <h2>Bar Code Example</h2>
-    <my-canvas style="width: 100%; height: 600px;">
+    <my-canvas style="width: 100%; height: 300px; background-color:pink;">
       <my-box
         :key=obj.id
         v-for="obj in chartValues"
@@ -64,7 +64,6 @@ export default {
       this.chartValues[selectedVal].val = Math.min(Math.max(this.chartValues[selectedVal].val + dir * 0.5, 0), 100);
       if (this.chartValues[selectedVal].val <= 1) dir = 1;
       if (this.chartValues[selectedVal].val >= 100) dir = -1;
-
 
     }, 100);
   }

@@ -33,7 +33,7 @@ export default {
     // Resize the canvas to fit its parent's width.
     // Normally you'd use a more flexible resize system.
     this.$refs['my-canvas'].width = this.$refs['my-canvas'].parentElement.clientWidth
-    this.$refs['my-canvas'].height = this.$refs['my-canvas'].parentElement.clientHeight/2;
+    this.$refs['my-canvas'].height = this.$refs['my-canvas'].parentElement.clientHeight;
   }
 }
 </script>

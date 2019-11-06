@@ -1,9 +1,10 @@
 <script>
+
 // Note how there's no template or styles in this component.
 
 // Helper functions to convert a percentage of canvas area to pixels.
-const percentWidthToPix = (percent, ctx) => Math.floor((ctx.canvas.width / 100) * percent)
-const percentHeightToPix = (percent, ctx) => Math.floor((ctx.canvas.height / 100) * percent)
+const percentWidthToPix = (percent, context) => Math.floor((context.canvas.width / 100) * percent)
+const percentHeightToPix = (percent, context) => Math.floor((context.canvas.height / 100) * percent)
 
 export default {
   // Gets us the provider property from the parent <my-canvas> component.
@@ -58,14 +59,14 @@ export default {
 
   computed: {
     calculatedBox () {
-      const ctx = this.provider.context
+      const context = this.provider.context
 
       // Turn start / end percentages into x, y, width, height in pixels.
       const calculated = {
-        x: percentWidthToPix(this.x1, ctx),
-        y: percentHeightToPix(this.y1, ctx),
-        w: percentWidthToPix(this.x2 - this.x1, ctx),
-        h: percentHeightToPix(this.y2 - this.y1, ctx)
+        x: percentWidthToPix(this.x1, context),
+        y: percentHeightToPix(this.y1, context),
+        w: percentWidthToPix(this.x2 - this.x1, context),
+        h: percentHeightToPix(this.y2 - this.y1, context)
       }
 
       // Yes yes, side-effects. This lets us cache the box dimensions of the previous render.
