@@ -62,13 +62,8 @@ export default {
     },
 
     clickMethod() {
-      let invertfunc = this.invert;
-      this.timeit(this, this.invert, Math.random()*255, 0xFF, 0xFF);
-
-       let func = this.ctx.putImageData;
-      // this.ctx.putImageData(this.imageData, 0, 0);
-       this.timeit(this.ctx, func, this.imageData, 0, 0);
-
+      this.timeit(this, this.invert, 0xFF, 0xFF, 0xFF);
+      this.timeit(this.ctx, this.ctx.putImageData, this.imageData, 0, 0);
     }
 
   },
