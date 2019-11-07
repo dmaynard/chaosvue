@@ -16,6 +16,7 @@ export default {
       ctx: null,
       image: null,
       imageData: null,
+      putImageData: null,
       data: null
     }
   },
@@ -24,8 +25,8 @@ export default {
   mounted() {
     // We can't access the rendering context until the canvas is mounted to the DOM.
     // Once we have it, provide it to all child components.
-    this.ctx = this.$refs['chaos-canvas'].getContext('2d')
-
+    this.ctx = this.$refs['chaos-canvas'].getContext('2d');
+    this.putImageData = this.$refs['chaos-canvas'].getContext('2d').putImageData;
     // Resize the canvas to fit its parent's width.
     // Normally you'd use a more flexible resize system.
     // this.$refs['chaos-canvas'].width = this.$refs['chaos-canvas'].parentElement.clientWidth
@@ -41,55 +42,17 @@ export default {
       self.data = self.imageData.data;
     };
 
-    canvasImg.src = "/logo.png";
+    canvasImg.src = "/DSMLego350.jpg";
   },
   methods: {
-    timeit(f, ...params) {
+    timeit(context, f, ...params) {
       let elapsed = -new Date().getTime();
-      let args = [...params]
-      window.console.log(args.length + " args");
-      switch (args.length) {
-        case 0:
-          {
-            f();
-            break;
-          }
-        case 1:
-          {
-            f(args[0]);
-            break;
-          }
-        case 2:
-          {
-            f(args[0], args[1]);
-            break;
-          }
-        case 3:
-          {
-            f(args[0], args[1], args[2]);
-            break;
-          }
-        case 4:
-          {
-            f(args[0], args[1], args[2], args[3]);
-            break;
-          }
-        case 5:
-          {
-            f(args[0], args[1], args[2], args[3], args[4]);
-            break;
-          }
-        default:
-          {
-            throw new Error(" too many arguments for timeit")
-          }
-
-      }
+      f.call(context, ...params);
       elapsed += new Date().getTime();
       window.console.log(f.name + " : " + elapsed + " ms");
       return elapsed;
     },
-    invert(r, g, b=0xFF) {
+    invert(r, g, b) {
       for (var i = 0; i < this.data.length; i += 4) {
         this.data[i] ^= r; // red
         this.data[i + 1] ^= g; // green
@@ -99,15 +62,13 @@ export default {
     },
 
     clickMethod() {
-      this.timeit(this.invert, 0xFF, 0xFF, 0xFF);
+      let invertfunc = this.invert;
+      this.timeit(this, this.invert, Math.random()*255, 0xFF, 0xFF);
 
-      let elapsed = -new Date().getTime();
-      // let func = this.ctx.putImageData;
-      this.ctx.putImageData(this.imageData, 0, 0);
-      // func(this.imageData, 0, 0).bind(this.ctx);
-      elapsed += new Date().getTime();
-      window.console.log("putImageData: " + elapsed + " ms")
-      // this.timeit(this.ctx.putImageData, this.imageData, 0, 0);
+       let func = this.ctx.putImageData;
+      // this.ctx.putImageData(this.imageData, 0, 0);
+       this.timeit(this.ctx, func, this.imageData, 0, 0);
+
     }
 
   },
