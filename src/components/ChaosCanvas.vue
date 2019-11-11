@@ -37,7 +37,7 @@ export default {
       self.image = this;
       self.$refs['chaos-canvas'].width = this.width;
       self.$refs['chaos-canvas'].height = this.height;
-      self.ctx.drawImage(canvasImg, 0, 0);
+      self.timeIt(self.ctx, self.ctx.drawImage, canvasImg, 0, 0);
       self.imageData = self.ctx.getImageData(0, 0, this.width, this.height);
       self.data = self.imageData.data;
     };
@@ -45,13 +45,14 @@ export default {
     canvasImg.src = "/DSMLego350.jpg";
   },
   methods: {
-    timeit(context, f, ...params) {
+    timeIt(context, f, ...params) {
       let elapsed = -new Date().getTime();
       f.call(context, ...params);
       elapsed += new Date().getTime();
       window.console.log(f.name + " : " + elapsed + " ms");
       return elapsed;
     },
+
     invert(r, g, b) {
       for (var i = 0; i < this.data.length; i += 4) {
         this.data[i] ^= r; // red
@@ -60,10 +61,9 @@ export default {
       }
 
     },
-
     clickMethod() {
-      this.timeit(this, this.invert, 0xFF, 0xFF, 0xFF);
-      this.timeit(this.ctx, this.ctx.putImageData, this.imageData, 0, 0);
+      this.timeIt(this, this.invert, 0xFF, 0xFF, 0xFF);
+      this.timeIt(this.ctx, this.ctx.putImageData, this.imageData, 0, 0);
     }
 
   },
