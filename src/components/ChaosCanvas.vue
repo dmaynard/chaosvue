@@ -37,6 +37,8 @@ export default {
       b: 0.2,
       c: 0.3,
       d: 0.4,
+      x: 0.1,
+      y: 0.1,
       darkmode: false,
       doPixel: null,
       iters: 0,
@@ -78,6 +80,8 @@ export default {
   },
   methods: {
     initAttractor() {
+      this.x = 0.1;
+      this.y = 0.1;
       this.iters = 0;
       this.nTouched = 0;
       this.nMaxed = 0;
@@ -145,7 +149,7 @@ export default {
          this.startNewAttractor = true;
          this.displayDelay = 0;
       }
-      if (this.nFramesMaxedUnchanged > 180) {
+      if (this.nFramesMaxedUnchanged > 60) {
          this.startNewAttractor = true;
          this.displayDelay = 180;
          console.log(" display delay ");
@@ -166,12 +170,9 @@ export default {
       }
     },
     iterateAttractor(init) {
-      let elapsed = -new Date().getTime();
+      // let elapsed = -new Date().getTime();
       let px = 0;
       let py = 0;
-
-      let x = 0.1;
-      let y = 0.1;
       let nx = 0;
       let ny = 0;
 
@@ -191,20 +192,21 @@ export default {
         // console.log (" x " + x + " y " + y);
         this.iters++;
 
-        nx = Math.sin(y * this.b) - (this.c * Math.sin(x * this.b));
-        ny = Math.sin(x * this.a) + this.d * Math.cos(y * this.a);
+        nx = Math.sin(this.y * this.b) - (this.c * Math.sin(this.x * this.b));
+        ny = Math.sin(this.x * this.a) + this.d * Math.cos(this.y * this.a);
 
-        x = nx;
-        y = ny;
+        this.x = nx;
+        this.y = ny;
         if (init) { // first frame we measure range and domain
-          if (x < this.xmin) this.xmin = x;
-          if (x > this.xmax) this.xmax = x;
-          if (y < this.ymin) this.ymin = y;
-          if (y > this.ymax) this.ymax = y;
+          if (this.x < this.xmin) this.xmin = this.x;
+          if (this.x > this.xmax) this.xmax = this.x;
+          if (this.y < this.ymin) this.ymin = this.y;
+          if (this.y > this.ymax) this.ymax = this.y;
         } else {
-          px = this.pixelx(x);
-          py = this.pixely(y);
+          px = this.pixelx(this.x);
+          py = this.pixely(this.y);
           this.doPixel(px, py);
+        }
         // this.testPixel(px,py);
       }
       if (init) {
@@ -214,8 +216,8 @@ export default {
     // console.log(" nTouched: " + this.nTouched + " nMaxed " + this.nMaxed + " this.iters " + this.iters + " % touched " +
       //   (this.nTouched * 100.0 / (this.width * this.height)));
       this.ctx.putImageData(this.imageData, 0, 0);
-       elapsed += new Date().getTime();
-       console.log(" elapsed: " + elapsed + " ms");
+       // elapsed += new Date().getTime();
+       // console.log(" elapsed: " + elapsed + " ms");
       if (this.nMaxed == prevMaxed) {
         this.nFramesMaxedUnchanged++;
       }
