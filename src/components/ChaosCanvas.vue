@@ -7,7 +7,7 @@
   <div v-else>
     <button v-on:click="pauseAnimation">Pause</button>
   </div>
-  <button v-on:click="continueAttractor">Continue</button>
+  <button v-on:click="resetAttractor">Next</button>
 
   <div v-if=darkmode>
     <button v-on:click="toggleLightMode">Light Mode</button>
@@ -149,11 +149,7 @@ export default {
          this.startNewAttractor = true;
          this.displayDelay = 0;
       }
-      if (this.nFramesMaxedUnchanged > 60) {
-         this.startNewAttractor = true;
-         this.displayDelay = 180;
-         console.log(" display delay ");
-      }
+    
       window.requestAnimationFrame(this.doAnimation);
       return;
     },
@@ -164,10 +160,8 @@ export default {
     pauseAnimation() {
       this.paused = true;
     },
-    continueAttractor() {
-      for (var i = 0; i < 60; i++) {
-        this.iterateAttractor(false);
-      }
+    resetAttractor() {
+      this.startNewAttractor = true;
     },
     iterateAttractor(init) {
       // let elapsed = -new Date().getTime();
