@@ -2,7 +2,7 @@
 <div class="chaos-canvas-wrapper">
   <canvas ref="chaos-canvas" @click="clickMethod"></canvas>
   <div v-if=paused>
-    <button v-on:click="startAnimation">Start</button>
+    <button v-on:click="startAnimation">Resume</button>
   </div>
   <div v-else>
     <button v-on:click="pauseAnimation">Pause</button>
@@ -10,10 +10,10 @@
   <button v-on:click="resetAttractor">Next</button>
 
   <div v-if=darkmode>
-    <button v-on:click="toggleLightMode">Light Mode</button>
+    <button v-on:click="toggleLightMode">Dark > Light</button>
   </div>
   <div v-else>
-    <button v-on:click="toggleLightMode">Dark Mode</button>
+    <button v-on:click="toggleLightMode">Light > Dark</button>
   </div>
   <slot></slot>
 </div>
@@ -41,6 +41,7 @@ export default {
       y: 0.1,
       darkmode: false,
       doPixel: null,
+      frames: 0,
       iters: 0,
       itersPerFrame: 5000,
       nTouched: 0,
@@ -55,8 +56,10 @@ export default {
       yrange: 1.0,
       margin: 20,
       startNewAttractor: true,
-      displayDelayDefault: 180,
-      displayDelay: 0
+      displayDelayDefault: 300,
+      displayDelay: 0,
+      elapsedCPU: 0,
+      enoughMaxed: 15.0
     }
   },
 
@@ -74,14 +77,14 @@ export default {
     this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
     this.data = this.imageData.data;
     this.doPixel = this.darkmode ? this.incPixel : this.decPixel;
-    var self = this;
-    self.initAttractor;
-    // canvasImg.src = "/DSMLego350.jpg";
+    this.paused = false;
+    window.requestAnimationFrame(this.doAnimation);
   },
   methods: {
     initAttractor() {
       this.x = 0.1;
       this.y = 0.1;
+      this.frames = 0;
       this.iters = 0;
       this.nTouched = 0;
       this.nMaxed = 0;
@@ -95,6 +98,9 @@ export default {
       this.ymax = -100.0;
       this.ymin = 100.0;
       this.nFramesMaxedUnchanged = 0;
+      console.log(" Ran for " + Math.floor((this.elapsedCPU * 1 / 1000 / 60)) + " minutes " +
+        Math.floor((this.elapsedCPU / 1000 % 60)) + " seconds");
+      this.elapsedCPU = 0;
     },
     timeIt(context, f, ...params) {
       let elapsed = -new Date().getTime();
@@ -134,41 +140,67 @@ export default {
       this.zeroImage();
       this.timeIt(this, this.testAttractor);
     },
-    doAnimation() {  // called every frame
+    doAnimation: function() { // called every frame
+      const startTime = new Date().getTime();
       if (this.paused) {
-        return;
+        return; // breaks the animation callback chain
       }
       if (this.displayDelay > 0) {
-          this.displayDelay--;
-          window.requestAnimationFrame(this.doAnimation);
-          return;
+        this.displayDelay--;
+        window.requestAnimationFrame(this.doAnimation);
+        return;
       }
+
       this.iterateAttractor(this.startNewAttractor);
       this.startNewAttractor = false;
       if (this.nTouched > 0 && this.nTouched < 500) {
-         this.startNewAttractor = true;
-         this.displayDelay = 0;
+        this.startNewAttractor = true;
+        this.displayDelay = 0;
       }
-    
+      if (this.frames % 120 == 0) {
+        let percentMaxed = (this.nMaxed * 100 / this.nTouched);
+        console.log(this.nTouched + " touched " + this.nMaxed + " maxed " +
+          percentMaxed + " percent ");
+        if (percentMaxed > this.enoughMaxed) {
+          this.startNewAttractor = true;
+          this.displayDelay = this.displayDelayDefault;
+          console.log(" Enough ");
+        }
+      }
+      this.elapsedCPU += (new Date().getTime()) - startTime;
+      if (this.elapsedCPU < 0) {
+        console.log(" impossible ");
+      }
       window.requestAnimationFrame(this.doAnimation);
       return;
     },
-    startAnimation() {
+    startAnimation: function() {
       this.paused = false;
-      window.requestAnimationFrame(this.doAnimation.call(this));
+      window.requestAnimationFrame(this.doAnimation);
     },
     pauseAnimation() {
       this.paused = true;
     },
     resetAttractor() {
+      if (this.paused) {
+        this.paused = false;
+        window.requestAnimationFrame(this.doAnimation);
+      }
+      this.displayDelay = 0;
       this.startNewAttractor = true;
     },
+    iteratePoint: function(x,y) {
+     let nx = Math.sin(y * this.b) - (this.c * Math.sin(x * this.b));
+     let ny = Math.sin(x * this.a) + this.d * Math.cos(y * this.a);
+     return [nx,ny];
+     },
+
     iterateAttractor(init) {
-      // let elapsed = -new Date().getTime();
+
       let px = 0;
       let py = 0;
-      let nx = 0;
-      let ny = 0;
+      // let nx = 0;
+      // et ny = 0;
 
       if (init) {
         this.initAttractor();
@@ -180,17 +212,18 @@ export default {
         }
         this.ctx.putImageData(this.imageData, 0, 0);
       }
+      this.frames++;
       let prevMaxed = this.nMaxed;
       for (var i = 0; i < this.itersPerFrame; i++) {
         /* eslint-disable no-console */
         // console.log (" x " + x + " y " + y);
         this.iters++;
 
-        nx = Math.sin(this.y * this.b) - (this.c * Math.sin(this.x * this.b));
-        ny = Math.sin(this.x * this.a) + this.d * Math.cos(this.y * this.a);
-
-        this.x = nx;
-        this.y = ny;
+        // nx = Math.sin(this.y * this.b) - (this.c * Math.sin(this.x * this.b));
+        // ny = Math.sin(this.x * this.a) + this.d * Math.cos(this.y * this.a);
+        [this.x,this.y] = this.iteratePoint(this.x, this.y)
+        // this.x = nx;
+        // this.y = ny;
         if (init) { // first frame we measure range and domain
           if (this.x < this.xmin) this.xmin = this.x;
           if (this.x > this.xmax) this.xmax = this.x;
@@ -207,11 +240,7 @@ export default {
         this.xrange = this.xmax - this.xmin
         this.yrange = this.ymax - this.ymin
       }
-    // console.log(" nTouched: " + this.nTouched + " nMaxed " + this.nMaxed + " this.iters " + this.iters + " % touched " +
-      //   (this.nTouched * 100.0 / (this.width * this.height)));
       this.ctx.putImageData(this.imageData, 0, 0);
-       // elapsed += new Date().getTime();
-       // console.log(" elapsed: " + elapsed + " ms");
       if (this.nMaxed == prevMaxed) {
         this.nFramesMaxedUnchanged++;
       }
@@ -219,11 +248,15 @@ export default {
     pixelx(x) {
       let px = Math.floor(((x - this.xmin) / this.xrange) * (this.width - (2 * this.margin))) + this.margin;
       if ((px < 0) || (px > this.width)) console.log(" bad x " + px + " " + x);
+      px = (px < 0) ? 0 : px;
+      px = (px > this.width-1) ? this.width-1 : px;
       return px;
     },
     pixely(y) {
       let py = Math.floor(((y - this.ymin) / this.yrange) * (this.height - (2 * this.margin))) + this.margin;
       if ((py < 0) || (py > this.height)) console.log(" bad y " + py + " " + y);
+      py = (py < 0) ? 0 : py;
+      py = (py > this.height-1) ? this.height-1 : py;
       return py;
     },
     incPixel(x, y) {
