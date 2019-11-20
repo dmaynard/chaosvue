@@ -1,21 +1,29 @@
 <template>
 <div class="chaos-canvas-wrapper">
-  <canvas ref="chaos-canvas" @click="clickMethod"></canvas>
-  <div v-if=paused>
-    <button v-on:click="startAnimation">Resume</button>
-  </div>
-  <div v-else>
-    <button v-on:click="pauseAnimation">Pause</button>
-  </div>
-  <button v-on:click="resetAttractor">Next</button>
+  <canvas style="float: right; " ref="chaos-canvas" @click="clickMethod"></canvas>
+  <span class="menu-wrapper" style="width: 100px">
+    <div v-if=menuUp>
+      <button style="float: right" class="close" v-on:click="toggleLightMode">X</button>
+    </div>
+    <div v-else>
+      <button style="float: left" class="close" v-on:click="toggleLightMode">&#9776;</button>
+    </div>
+    <div v-if=paused>
+      <button v-on:click="startAnimation">Resume</button>
+    </div>
+    <div v-else>
+      <button v-on:click="pauseAnimation">Pause</button>
+    </div>
+    <button v-on:click="resetAttractor">Next</button>
 
-  <div v-if=darkmode>
-    <button v-on:click="toggleLightMode">Dark > Light</button>
-  </div>
-  <div v-else>
-    <button v-on:click="toggleLightMode">Light > Dark</button>
-  </div>
-  <slot></slot>
+    <div v-if=darkmode>
+      <button v-on:click="toggleLightMode">Dark> Light</button>
+    </div>
+    <div v-else>
+      <button v-on:click="toggleLightMode">Light> Dark</button>
+    </div>
+  </span>
+
 </div>
 </template>
 
@@ -59,7 +67,8 @@ export default {
       displayDelayDefault: 300,
       displayDelay: 0,
       elapsedCPU: 0,
-      enoughMaxed: 15.0
+      enoughMaxed: 15.0,
+      menuUp: true
     }
   },
 
@@ -189,11 +198,11 @@ export default {
       this.displayDelay = 0;
       this.startNewAttractor = true;
     },
-    iteratePoint: function(x,y) {
-     let nx = Math.sin(y * this.b) - (this.c * Math.sin(x * this.b));
-     let ny = Math.sin(x * this.a) + this.d * Math.cos(y * this.a);
-     return [nx,ny];
-     },
+    iteratePoint: function(x, y) {
+      let nx = Math.sin(y * this.b) - (this.c * Math.sin(x * this.b));
+      let ny = Math.sin(x * this.a) + this.d * Math.cos(y * this.a);
+      return [nx, ny];
+    },
 
     iterateAttractor(init) {
 
@@ -221,7 +230,7 @@ export default {
 
         // nx = Math.sin(this.y * this.b) - (this.c * Math.sin(this.x * this.b));
         // ny = Math.sin(this.x * this.a) + this.d * Math.cos(this.y * this.a);
-        [this.x,this.y] = this.iteratePoint(this.x, this.y)
+        [this.x, this.y] = this.iteratePoint(this.x, this.y)
         // this.x = nx;
         // this.y = ny;
         if (init) { // first frame we measure range and domain
@@ -249,14 +258,14 @@ export default {
       let px = Math.floor(((x - this.xmin) / this.xrange) * (this.width - (2 * this.margin))) + this.margin;
       if ((px < 0) || (px > this.width)) console.log(" bad x " + px + " " + x);
       px = (px < 0) ? 0 : px;
-      px = (px > this.width-1) ? this.width-1 : px;
+      px = (px > this.width - 1) ? this.width - 1 : px;
       return px;
     },
     pixely(y) {
       let py = Math.floor(((y - this.ymin) / this.yrange) * (this.height - (2 * this.margin))) + this.margin;
       if ((py < 0) || (py > this.height)) console.log(" bad y " + py + " " + y);
       py = (py < 0) ? 0 : py;
-      py = (py > this.height-1) ? this.height-1 : py;
+      py = (py > this.height - 1) ? this.height - 1 : py;
       return py;
     },
     incPixel(x, y) {
@@ -310,3 +319,26 @@ export default {
 
 }
 </script>
+<style scoped>
+button {
+  width: 100%;
+  text: centered;
+  border-radius: 2px;
+}
+
+button.close {
+  width: 25px;
+  float: right;
+  border-radius: 2px;
+}
+
+canvas {
+  display: span;
+}
+
+span.menu-wrapper {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+</style>

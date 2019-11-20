@@ -1,10 +1,10 @@
 <template>
   <div id="app">
-    <h2>Chaotic Attractor</h2>
+  
     <!-- These are the custom components we'll create -->
     <!-- Values for `my-box` are percentages of the width of the canvas. -->
     <!-- Each bar will take up an equal space of the canvas. -->
-    <chaos-canvas style="width: 100%; height: 90%; background-color:powderblue;">
+    <chaos-canvas style="width: 100%; height: 100%; background-color:powderblue;">
     </chaos-canvas>
 
 
