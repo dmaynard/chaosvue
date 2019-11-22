@@ -1,27 +1,28 @@
 <template>
 <div class="chaos-canvas-wrapper">
-  <canvas style="float: right; " ref="chaos-canvas" @click="clickMethod"></canvas>
+  <canvas  ref="chaos-canvas" @click="resetAttractor"></canvas>
   <span class="menu-wrapper" style="width: 100px">
     <div v-if=menuUp>
-      <button style="float: right" class="close" v-on:click="toggleLightMode">X</button>
-    </div>
-    <div v-else>
-      <button style="float: left" class="close" v-on:click="toggleLightMode">&#9776;</button>
-    </div>
-    <div v-if=paused>
-      <button v-on:click="startAnimation">Resume</button>
-    </div>
-    <div v-else>
-      <button v-on:click="pauseAnimation">Pause</button>
-    </div>
-    <button v-on:click="resetAttractor">Next</button>
+      <button style="float: right" class="close" v-on:click="toggleMenuUp">X</button>
+      <div v-if=paused>
+        <button class="uiButton" v-on:click="startAnimation">Resume</button>
+      </div>
+      <div v-else>
+        <button class="uiButton" v-on:click="pauseAnimation">Pause</button>
+      </div>
+      <button class="uiButton" v-on:click="resetAttractor">Next</button>
 
-    <div v-if=darkmode>
-      <button v-on:click="toggleLightMode">Dark> Light</button>
+      <div v-if=darkmode>
+        <button class="uiButton" v-on:click="toggleLightMode">&#x2600;</button>
+      </div>
+      <div v-else>
+        <button class="uiButton" v-on:click="toggleLightMode">&#x263C;</button>
+      </div>
     </div>
     <div v-else>
-      <button v-on:click="toggleLightMode">Light> Dark</button>
+      <button style="float: left" class="close" v-on:click="toggleMenuUp">&#9776;</button>
     </div>
+
   </span>
 
 </div>
@@ -55,7 +56,6 @@ export default {
       nTouched: 0,
       nMaxed: 0,
       paused: true,
-      nFramesMaxedUnchanged: 0,
       xmin: 100,
       xmax: -100,
       ymin: 100,
@@ -68,7 +68,10 @@ export default {
       displayDelay: 0,
       elapsedCPU: 0,
       enoughMaxed: 15.0,
-      menuUp: true
+      menuUp: true,
+      prevMaxed: 0,
+      prevTouched: 0,
+      nFramesSame: 0
     }
   },
 
@@ -106,7 +109,7 @@ export default {
       this.xmin = 100.0;
       this.ymax = -100.0;
       this.ymin = 100.0;
-      this.nFramesMaxedUnchanged = 0;
+      this.nFramesSame = 0;
       console.log(" Ran for " + Math.floor((this.elapsedCPU * 1 / 1000 / 60)) + " minutes " +
         Math.floor((this.elapsedCPU / 1000 % 60)) + " seconds");
       this.elapsedCPU = 0;
@@ -159,12 +162,22 @@ export default {
         window.requestAnimationFrame(this.doAnimation);
         return;
       }
+      this.prevMaxed = this.nMaxed;
+      this.prevTouched = this.nTouched;
 
       this.iterateAttractor(this.startNewAttractor);
       this.startNewAttractor = false;
       if (this.nTouched > 0 && this.nTouched < 500) {
         this.startNewAttractor = true;
         this.displayDelay = 0;
+      }
+      if( (this.nTouched == this.prevTouched) && (this.nMaxed == this.prevMaxed)) {
+        this.nFramesSame++
+        if(this.nFramesSame > 60) {
+          console.log("no changes for 60 frames, abort this attractor")
+          this.startNewAttractor = true;
+          this.displayDelay = 0;
+        }
       }
       if (this.frames % 120 == 0) {
         let percentMaxed = (this.nMaxed * 100 / this.nTouched);
@@ -222,7 +235,6 @@ export default {
         this.ctx.putImageData(this.imageData, 0, 0);
       }
       this.frames++;
-      let prevMaxed = this.nMaxed;
       for (var i = 0; i < this.itersPerFrame; i++) {
         /* eslint-disable no-console */
         // console.log (" x " + x + " y " + y);
@@ -250,9 +262,6 @@ export default {
         this.yrange = this.ymax - this.ymin
       }
       this.ctx.putImageData(this.imageData, 0, 0);
-      if (this.nMaxed == prevMaxed) {
-        this.nFramesMaxedUnchanged++;
-      }
     },
     pixelx(x) {
       let px = Math.floor(((x - this.xmin) / this.xrange) * (this.width - (2 * this.margin))) + this.margin;
@@ -303,8 +312,15 @@ export default {
         console.log(" not grayscale " + this.data[i] + this.data[i + 1]);
       }
     },
+    setMenuText (darkMode) {
+    let newColor = darkMode? 'white' : 'black';
+     document.getElementsByClassName("uiButton").forEach ( function(element) {
+       element.style.color = newColor;
+     });
+    },
     toggleLightMode() {
       this.darkmode = !this.darkmode;
+      this.setMenuText(this.darkmode);
       if (this.darkmode) {
         this.invert(0xFF, 0xFF, 0xFF);
         this.doPixel = this.incPixel;
@@ -313,6 +329,9 @@ export default {
         this.doPixel = this.decPixel;
       }
       this.ctx.putImageData(this.imageData, 0, 0);
+    },
+    toggleMenuUp() {
+      this.menuUp = !this.menuUp;
     }
   },
 
@@ -324,6 +343,8 @@ button {
   width: 100%;
   text: centered;
   border-radius: 2px;
+  background-color: Transparent;
+  background-repeat:no-repeat;
 }
 
 button.close {
