@@ -1,14 +1,14 @@
 <template>
 <div class="chaos-canvas-wrapper">
-  <canvas  ref="chaos-canvas" @click="resetAttractor"></canvas>
-  <span class="menu-wrapper" style="width: 100px">
+  <canvas ref="chaos-canvas" @click="resetAttractor"></canvas>
+  <span class="menu-wrapper" style="width: 100px ">
     <div v-if=menuUp>
       <button style="float: right" class="close" v-on:click="toggleMenuUp">X</button>
       <div v-if=paused>
         <button class="uiButton" v-on:click="startAnimation">Resume</button>
       </div>
       <div v-else>
-        <button class="uiButton" v-on:click="pauseAnimation">Pause</button>
+        <button ref="pause" class="uiButton" v-on:click="pauseAnimation">Pause</button>
       </div>
       <button class="uiButton" v-on:click="resetAttractor">Next</button>
 
@@ -16,7 +16,7 @@
         <button class="uiButton" v-on:click="toggleLightMode">&#x2600;</button>
       </div>
       <div v-else>
-        <button class="uiButton" v-on:click="toggleLightMode">&#x263C;</button>
+        <button class="uiButton" v-on:click="toggleLightMode">&#x263E;</button>
       </div>
     </div>
     <div v-else>
@@ -67,14 +67,26 @@ export default {
       displayDelayDefault: 300,
       displayDelay: 0,
       elapsedCPU: 0,
-      enoughMaxed: 15.0,
+      enoughMaxed: 10.0,
+      progress: 0,
       menuUp: true,
       prevMaxed: 0,
       prevTouched: 0,
-      nFramesSame: 0
+      nFramesSame: 0,
+      window: {
+        width: 0,
+        height: 0
+      }
     }
   },
 
+  created() {
+    window.addEventListener('resize', this.handleResize)
+    this.handleResize();
+  },
+  destroyed() {
+    window.removeEventListener('resize', this.handleResize)
+  },
 
   mounted() {
     // We can't access the rendering context until the canvas is mounted to the DOM.
@@ -93,6 +105,33 @@ export default {
     window.requestAnimationFrame(this.doAnimation);
   },
   methods: {
+    initImageData(w, h) {
+      console.log("resize: w = " + w + " h = " + h);
+      this.width = w;
+      this.height = h;
+      this.$refs['chaos-canvas'].width = w;
+      this.$refs['chaos-canvas'].height = h;
+      this.ctx = this.$refs['chaos-canvas'].getContext('2d');
+      this.width = this.$refs['chaos-canvas'].width;
+      this.height = this.$refs['chaos-canvas'].height;
+      this.image = new Image(this.width, this.height);
+      this.ctx.drawImage(this.image, 0, 0, this.width, this.height);
+      this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
+      this.data = this.imageData.data;
+      this.ctx.clearRect(0, 0, this.width, this.height);
+      if (this.darkmode) {
+        this.zeroImage();
+      } else {
+        this.fillImage(0xFF, 0xFF, 0xFF);
+      }
+      this.ctx.putImageData(this.imageData, 0, 0);
+
+    },
+    handleResize() {
+      if (this.$refs['chaos-canvas']) { // Has Vue loaded yet?
+        this.initImageData(window.innerWidth, window.innerHeight);
+      }
+    },
     initAttractor() {
       this.x = 0.1;
       this.y = 0.1;
@@ -110,6 +149,7 @@ export default {
       this.ymax = -100.0;
       this.ymin = 100.0;
       this.nFramesSame = 0;
+      this.progress = 0;
       console.log(" Ran for " + Math.floor((this.elapsedCPU * 1 / 1000 / 60)) + " minutes " +
         Math.floor((this.elapsedCPU / 1000 % 60)) + " seconds");
       this.elapsedCPU = 0;
@@ -171,24 +211,29 @@ export default {
         this.startNewAttractor = true;
         this.displayDelay = 0;
       }
-      if( (this.nTouched == this.prevTouched) && (this.nMaxed == this.prevMaxed)) {
+      if ((this.nTouched == this.prevTouched) && (this.nMaxed == this.prevMaxed)) {
         this.nFramesSame++
-        if(this.nFramesSame > 60) {
+        if (this.nFramesSame > 60) {
           console.log("no changes for 60 frames, abort this attractor")
           this.startNewAttractor = true;
-          this.displayDelay = 0;
+          this.progress = 100;
+          this.displayDelay = this.displayDelayDefault;
         }
       }
-      if (this.frames % 120 == 0) {
+      if (this.frames % 1 == 0) {
         let percentMaxed = (this.nMaxed * 100 / this.nTouched);
-        console.log(this.nTouched + " touched " + this.nMaxed + " maxed " +
-          percentMaxed + " percent ");
+        this.progress = Math.min(((percentMaxed * 100.) / this.enoughMaxed), 100.);
+        // console.log(this.nTouched + " touched " + this.nMaxed + " maxed " +
+        //  percentMaxed + " percent " + "  Progress " + this.progress);
+        this.drawProgressBar(this.progress);
         if (percentMaxed > this.enoughMaxed) {
           this.startNewAttractor = true;
           this.displayDelay = this.displayDelayDefault;
           console.log(" Enough ");
         }
+
       }
+      this.drawProgressBar(this.progress);
       this.elapsedCPU += (new Date().getTime()) - startTime;
       if (this.elapsedCPU < 0) {
         console.log(" impossible ");
@@ -312,11 +357,11 @@ export default {
         console.log(" not grayscale " + this.data[i] + this.data[i + 1]);
       }
     },
-    setMenuText (darkMode) {
-    let newColor = darkMode? 'white' : 'black';
-     document.getElementsByClassName("uiButton").forEach ( function(element) {
-       element.style.color = newColor;
-     });
+    setMenuText(darkMode) {
+      let newColor = darkMode ? 'white' : 'black';
+      document.getElementsByClassName("uiButton").forEach(function(element) {
+        element.style.color = newColor;
+      });
     },
     toggleLightMode() {
       this.darkmode = !this.darkmode;
@@ -332,6 +377,14 @@ export default {
     },
     toggleMenuUp() {
       this.menuUp = !this.menuUp;
+    },
+    drawProgressBar(progress) {
+      this.ctx.fillStyle = 'rgba(0,225,0,0.5)';
+      let pButton = this.$refs['pause'];
+      if (pButton) {
+        this.ctx.fillRect(10, 32,
+          (progress * pButton.clientWidth / 100.), pButton.clientHeight);
+      }
     }
   },
 
@@ -339,12 +392,13 @@ export default {
 }
 </script>
 <style scoped>
-button {
+button.uiButton {
   width: 100%;
   text: centered;
   border-radius: 2px;
   background-color: Transparent;
-  background-repeat:no-repeat;
+  background-repeat: no-repeat;
+  font-size: 12px;
 }
 
 button.close {
