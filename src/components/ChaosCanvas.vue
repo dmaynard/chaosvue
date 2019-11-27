@@ -5,12 +5,12 @@
     <div v-if=menuUp>
       <button style="float: right" class="close" v-on:click="toggleMenuUp">X</button>
       <div v-if=paused>
-        <button class="uiButton" v-on:click="startAnimation">Resume</button>
+        <button ref="resume" class="uiButton" v-on:click="startAnimation">Resume</button>
       </div>
       <div v-else>
-        <button ref="pause" class="uiButton" v-on:click="pauseAnimation">Pause</button>
+        <button ref="pause" class="uiButton" id="pauseButton" v-on:click="pauseAnimation">Pause</button>
       </div>
-      <button class="uiButton" v-on:click="resetAttractor">Next</button>
+      <button ref="next" class="uiButton" v-on:click="resetAttractor">Next</button>
 
       <div v-if=darkmode>
         <button class="uiButton" v-on:click="toggleLightMode">&#x2600;</button>
@@ -55,7 +55,7 @@ export default {
       itersPerFrame: 5000,
       nTouched: 0,
       nMaxed: 0,
-      paused: true,
+      paused: false,
       xmin: 100,
       xmax: -100,
       ymin: 100,
@@ -64,7 +64,7 @@ export default {
       yrange: 1.0,
       margin: 20,
       startNewAttractor: true,
-      displayDelayDefault: 300,
+      displayDelayDefault: 600,
       displayDelay: 0,
       elapsedCPU: 0,
       enoughMaxed: 10.0,
@@ -76,6 +76,12 @@ export default {
       window: {
         width: 0,
         height: 0
+      },
+      progressBar: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
       }
     }
   },
@@ -102,6 +108,10 @@ export default {
     this.data = this.imageData.data;
     this.doPixel = this.darkmode ? this.incPixel : this.decPixel;
     this.paused = false;
+    console.log("this.$refs['pause'] " + this.$refs['pause']);
+    console.log("this.$refs['resume'] " + this.$refs['resume']);
+    console.log("this.$refs['next'] " + this.$refs['next']);
+    this.progressBar = this.$refs['next'].getBoundingClientRect();
     window.requestAnimationFrame(this.doAnimation);
   },
   methods: {
@@ -199,6 +209,7 @@ export default {
       }
       if (this.displayDelay > 0) {
         this.displayDelay--;
+        this.drawProgressBar(this.progress);
         window.requestAnimationFrame(this.doAnimation);
         return;
       }
@@ -223,12 +234,13 @@ export default {
       if (this.frames % 1 == 0) {
         let percentMaxed = (this.nMaxed * 100 / this.nTouched);
         this.progress = Math.min(((percentMaxed * 100.) / this.enoughMaxed), 100.);
-        // console.log(this.nTouched + " touched " + this.nMaxed + " maxed " +
-        //  percentMaxed + " percent " + "  Progress " + this.progress);
         this.drawProgressBar(this.progress);
         if (percentMaxed > this.enoughMaxed) {
           this.startNewAttractor = true;
-          this.displayDelay = this.displayDelayDefault;
+          this.displayDelay = (this.nTouched > 1000) ? this.displayDelayDefault : 0;
+          console.log(this.nTouched + " touched " + this.nMaxed + " maxed " +
+            percentMaxed + " percent " + "  Progress " + this.progress);
+
           console.log(" Enough ");
         }
 
@@ -300,7 +312,6 @@ export default {
           py = this.pixely(this.y);
           this.doPixel(px, py);
         }
-        // this.testPixel(px,py);
       }
       if (init) {
         this.xrange = this.xmax - this.xmin
@@ -331,7 +342,7 @@ export default {
         this.data[i + 1] += 1;
         this.data[i + 2] += 1;
       }
-      this.data[i + 3] = 255;
+      // this.data[i + 3] = 255;
     },
     decPixel(x, y) {
       let i = (y * this.width + x) * 4;
@@ -342,11 +353,7 @@ export default {
         this.data[i + 1] += -1;
         this.data[i + 2] += -1;
       }
-      if (this.data[i] !== this.data[i + 1]) {
-        console.log(" not grayscale " + this.data[i] + this.data[i + 1]);
-      }
-      this.data[i + 3] = 255;
-
+      // this.data[i + 3] = 255;
     },
     testPixel(x, y) {
       let i = (y * this.width + x) * 4;
@@ -379,11 +386,19 @@ export default {
       this.menuUp = !this.menuUp;
     },
     drawProgressBar(progress) {
-      this.ctx.fillStyle = 'rgba(0,225,0,0.5)';
-      let pButton = this.$refs['pause'];
+      let pButton = this.$refs['next'];
+
       if (pButton) {
-        this.ctx.fillRect(10, 32,
+        if( this.displayDelay == 0) {
+        this.ctx.fillStyle = 'rgba(0,225,0,0.3)';
+        this.ctx.fillRect(this.progressBar.x, this.progressBar.y,
           (progress * pButton.clientWidth / 100.), pButton.clientHeight);
+        } else {
+        this.ctx.fillStyle = 'rgba(200,255,0,0.3)';
+        this.ctx.fillRect(this.progressBar.x, this.progressBar.y,
+          (((this.displayDelayDefault - this.displayDelay)/ this.displayDelayDefault) * pButton.clientWidth), pButton.clientHeight);
+        }
+
       }
     }
   },
