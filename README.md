@@ -20,7 +20,7 @@ yarn build
 yarn lint
 ```
 
-Here is the function that iterates the initAttractor
+Here is the function that iterates the attractor. It has 4 parameters a, b, c, and d which are randomly set for each new attractor. The function continues iterating until 10% of the points have reached their maximum value (255). 
 ```
 iteratePoint: function(x, y) {
   let nx = Math.sin(y * this.b) - (this.c * Math.sin(x * this.b));
