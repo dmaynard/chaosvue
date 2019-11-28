@@ -1,7 +1,7 @@
 <template>
 <div class="chaos-canvas-wrapper">
   <canvas ref="chaos-canvas" @click="resetAttractor"></canvas>
-  <span class="menu-wrapper" style="width: 100px ">
+  <span class="menu-wrapper" style="width: 60px ">
     <div v-if=menuUp>
       <button style="float: right" class="close" v-on:click="toggleMenuUp">X</button>
       <div v-if=paused>
@@ -53,6 +53,7 @@ export default {
       frames: 0,
       iters: 0,
       itersPerFrame: 5000,
+      itersFirstFrame: 1000,
       nTouched: 0,
       nMaxed: 0,
       paused: false,
@@ -91,7 +92,8 @@ export default {
     this.handleResize();
   },
   destroyed() {
-    window.removeEventListener('resize', this.handleResize)
+    window.removeEventListener('resize', this.handleResize);
+    window.cancelAnimationFrame();
   },
 
   mounted() {
@@ -128,13 +130,15 @@ export default {
       this.ctx.drawImage(this.image, 0, 0, this.width, this.height);
       this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
       this.data = this.imageData.data;
-      this.ctx.clearRect(0, 0, this.width, this.height);
-      if (this.darkmode) {
+      this.ctx.fillStyle = this.darkmode ? 'rgba(0,0,0,1.0)' : 'rgba(255,255,255,1.0)'
+      this.ctx.fillRect(0, 0, this.width, this.height);
+      /* if (this.darkmode) {
         this.zeroImage();
       } else {
         this.fillImage(0xFF, 0xFF, 0xFF);
       }
-      this.ctx.putImageData(this.imageData, 0, 0);
+      */
+      // this.ctx.putImageData(this.imageData, 0, 0);
 
     },
     handleResize() {
@@ -160,8 +164,8 @@ export default {
       this.ymin = 100.0;
       this.nFramesSame = 0;
       this.progress = 0;
-      console.log(" Ran for " + Math.floor((this.elapsedCPU * 1 / 1000 / 60)) + " minutes " +
-        Math.floor((this.elapsedCPU / 1000 % 60)) + " seconds");
+      // console.log(" Ran for " + Math.floor((this.elapsedCPU * 1 / 1000 / 60)) + " minutes " +
+      // Math.floor((this.elapsedCPU / 1000 % 60)) + " seconds");
       this.elapsedCPU = 0;
     },
     timeIt(context, f, ...params) {
@@ -209,6 +213,7 @@ export default {
       }
       if (this.displayDelay > 0) {
         this.displayDelay--;
+        this.ctx.putImageData(this.imageData, 0, 0);
         this.drawProgressBar(this.progress);
         window.requestAnimationFrame(this.doAnimation);
         return;
@@ -231,20 +236,19 @@ export default {
           this.displayDelay = this.displayDelayDefault;
         }
       }
-      if (this.frames % 1 == 0) {
-        let percentMaxed = (this.nMaxed * 100 / this.nTouched);
-        this.progress = Math.min(((percentMaxed * 100.) / this.enoughMaxed), 100.);
-        this.drawProgressBar(this.progress);
-        if (percentMaxed > this.enoughMaxed) {
-          this.startNewAttractor = true;
-          this.displayDelay = (this.nTouched > 1000) ? this.displayDelayDefault : 0;
-          console.log(this.nTouched + " touched " + this.nMaxed + " maxed " +
-            percentMaxed + " percent " + "  Progress " + this.progress);
 
-          console.log(" Enough ");
-        }
+      let percentMaxed = (this.nMaxed * 100 / this.nTouched);
+      this.progress = Math.min(((percentMaxed * 100.) / this.enoughMaxed), 100.);
+      this.drawProgressBar(this.progress);
+      if (percentMaxed > this.enoughMaxed) {
+        this.startNewAttractor = true;
+        this.displayDelay = (this.nTouched > 5000) ? this.displayDelayDefault : 0;
+        console.log(this.nTouched + " touched " + this.nMaxed + " maxed " +
+          percentMaxed + " percent " + "  Progress " + this.progress);
 
+        console.log(" Enough ");
       }
+
       this.drawProgressBar(this.progress);
       this.elapsedCPU += (new Date().getTime()) - startTime;
       if (this.elapsedCPU < 0) {
@@ -283,16 +287,13 @@ export default {
 
       if (init) {
         this.initAttractor();
-        this.ctx.clearRect(0, 0, this.width, this.height);
-        if (this.darkmode) {
-          this.zeroImage();
-        } else {
-          this.fillImage(0xFF, 0xFF, 0xFF);
-        }
-        this.ctx.putImageData(this.imageData, 0, 0);
+        this.ctx.fillStyle = this.darkmode ? 'rgba(0,0,0,1.0)' : 'rgba(255,255,255,1.0)'
+        this.ctx.fillRect(0, 0, this.width, this.height);
+        this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
+        this.data = this.imageData.data;
       }
       this.frames++;
-      for (var i = 0; i < this.itersPerFrame; i++) {
+      for (var i = 0; i < (init ? this.itersFirstFrame : this.itersPerFrame); i++) {
         /* eslint-disable no-console */
         // console.log (" x " + x + " y " + y);
         this.iters++;
@@ -384,19 +385,23 @@ export default {
     },
     toggleMenuUp() {
       this.menuUp = !this.menuUp;
+      this.ctx.putImageData(this.imageData, 0, 0);
     },
     drawProgressBar(progress) {
       let pButton = this.$refs['next'];
 
       if (pButton) {
-        if( this.displayDelay == 0) {
-        this.ctx.fillStyle = 'rgba(0,225,0,0.3)';
-        this.ctx.fillRect(this.progressBar.x, this.progressBar.y,
-          (progress * pButton.clientWidth / 100.), pButton.clientHeight);
+        if (this.displayDelay == 0) {
+          this.ctx.fillStyle = 'rgba(0,225,0,0.3)';
+          this.ctx.fillRect(this.progressBar.x, this.progressBar.y + 1,
+            (progress * pButton.clientWidth / 100.), pButton.clientHeight);
         } else {
-        this.ctx.fillStyle = 'rgba(200,255,0,0.3)';
-        this.ctx.fillRect(this.progressBar.x, this.progressBar.y,
-          (((this.displayDelayDefault - this.displayDelay)/ this.displayDelayDefault) * pButton.clientWidth), pButton.clientHeight);
+          this.ctx.fillStyle = 'rgba(0,225,0,0.5)';
+          this.ctx.fillRect(this.progressBar.x, this.progressBar.y + 1,
+            pButton.clientWidth, pButton.clientHeight)
+          this.ctx.fillStyle = 'rgba(225,255,0,0.5)';
+          this.ctx.fillRect(this.progressBar.x, this.progressBar.y + 1,
+            (((this.displayDelayDefault - this.displayDelay) / this.displayDelayDefault) * pButton.clientWidth), pButton.clientHeight);
         }
 
       }
@@ -410,7 +415,7 @@ export default {
 button.uiButton {
   width: 100%;
   text: centered;
-  border-radius: 2px;
+  border-radius: 4px;
   background-color: Transparent;
   background-repeat: no-repeat;
   font-size: 12px;
