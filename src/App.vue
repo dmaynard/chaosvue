@@ -12,7 +12,12 @@
 </template>
 
 <script>
+import Vue from 'vue';
 import ChaosCanvas from './components/ChaosCanvas.vue';
+Vue.config.errorHandler = function(err, vm, info) {
+  
+  alert(`Error: ${err.toString()}\nInfo: ${info}`)
+}
 
 export default {
   name: 'app',

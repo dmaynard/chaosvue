@@ -83,17 +83,21 @@ export default {
         y: 0,
         width: 0,
         height: 0,
-      }
+      },
+      animationRequestID: null
     }
   },
 
   created() {
     window.addEventListener('resize', this.handleResize)
     this.handleResize();
+
   },
   destroyed() {
     window.removeEventListener('resize', this.handleResize);
-    window.cancelAnimationFrame();
+    if(this.animationRequestID) {
+    this.window.cancelAnimationFrame(this.animationRequestID);
+    }
   },
 
   mounted() {
@@ -114,7 +118,7 @@ export default {
     console.log("this.$refs['resume'] " + this.$refs['resume']);
     console.log("this.$refs['next'] " + this.$refs['next']);
     this.progressBar = this.$refs['next'].getBoundingClientRect();
-    window.requestAnimationFrame(this.doAnimation);
+    this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
   },
   methods: {
     initImageData(w, h) {
@@ -130,15 +134,17 @@ export default {
       this.ctx.drawImage(this.image, 0, 0, this.width, this.height);
       this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
       this.data = this.imageData.data;
+      /*
       this.ctx.fillStyle = this.darkmode ? 'rgba(0,0,0,1.0)' : 'rgba(255,255,255,1.0)'
       this.ctx.fillRect(0, 0, this.width, this.height);
-      /* if (this.darkmode) {
+      */
+      if (this.darkmode) {
         this.zeroImage();
       } else {
         this.fillImage(0xFF, 0xFF, 0xFF);
       }
-      */
-      // this.ctx.putImageData(this.imageData, 0, 0);
+
+      this.ctx.putImageData(this.imageData, 0, 0);
 
     },
     handleResize() {
@@ -215,7 +221,7 @@ export default {
         this.displayDelay--;
         this.ctx.putImageData(this.imageData, 0, 0);
         this.drawProgressBar(this.progress);
-        window.requestAnimationFrame(this.doAnimation);
+        this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
         return;
       }
       this.prevMaxed = this.nMaxed;
@@ -254,12 +260,12 @@ export default {
       if (this.elapsedCPU < 0) {
         console.log(" impossible ");
       }
-      window.requestAnimationFrame(this.doAnimation);
+      this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
       return;
     },
     startAnimation: function() {
       this.paused = false;
-      window.requestAnimationFrame(this.doAnimation);
+      this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
     },
     pauseAnimation() {
       this.paused = true;
@@ -267,7 +273,7 @@ export default {
     resetAttractor() {
       if (this.paused) {
         this.paused = false;
-        window.requestAnimationFrame(this.doAnimation);
+        this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
       }
       this.displayDelay = 0;
       this.startNewAttractor = true;
