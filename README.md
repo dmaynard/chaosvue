@@ -20,6 +20,15 @@ yarn build
 yarn lint
 ```
 
+Here is the function that iterates the initAttractor
+```
+iteratePoint: function(x, y) {
+  let nx = Math.sin(y * this.b) - (this.c * Math.sin(x * this.b));
+  let ny = Math.sin(x * this.a) + this.d * Math.cos(y * this.a);
+  return [nx, ny];
+}
+```
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
