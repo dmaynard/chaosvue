@@ -95,8 +95,8 @@ export default {
   },
   destroyed() {
     window.removeEventListener('resize', this.handleResize);
-    if(this.animationRequestID) {
-    this.window.cancelAnimationFrame(this.animationRequestID);
+    if (this.animationRequestID) {
+      window.cancelAnimationFrame(this.animationRequestID);
     }
   },
 
@@ -109,20 +109,17 @@ export default {
     this.width = this.$refs['chaos-canvas'].width;
     this.height = this.$refs['chaos-canvas'].height;
     this.image = new Image(this.width, this.height);
-    this.ctx.drawImage(this.image, 0, 0, this.width, this.height);
+    this.ctx.drawImage(this.image, 0, 0, this.width, this.height, 0, 0, this.width, this.height);
     this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
     this.data = this.imageData.data;
     this.doPixel = this.darkmode ? this.incPixel : this.decPixel;
     this.paused = false;
-    console.log("this.$refs['pause'] " + this.$refs['pause']);
-    console.log("this.$refs['resume'] " + this.$refs['resume']);
-    console.log("this.$refs['next'] " + this.$refs['next']);
     this.progressBar = this.$refs['next'].getBoundingClientRect();
     this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
   },
   methods: {
     initImageData(w, h) {
-      console.log("resize: w = " + w + " h = " + h);
+      // console.log("resize: w = " + w + " h = " + h);
       this.width = w;
       this.height = h;
       this.$refs['chaos-canvas'].width = w;
@@ -131,13 +128,9 @@ export default {
       this.width = this.$refs['chaos-canvas'].width;
       this.height = this.$refs['chaos-canvas'].height;
       this.image = new Image(this.width, this.height);
-      this.ctx.drawImage(this.image, 0, 0, this.width, this.height);
+      this.ctx.drawImage(this.image, 0, 0, this.width, this.height, 0, 0, this.width, this.height);
       this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
       this.data = this.imageData.data;
-      /*
-      this.ctx.fillStyle = this.darkmode ? 'rgba(0,0,0,1.0)' : 'rgba(255,255,255,1.0)'
-      this.ctx.fillRect(0, 0, this.width, this.height);
-      */
       if (this.darkmode) {
         this.zeroImage();
       } else {
@@ -236,7 +229,7 @@ export default {
       if ((this.nTouched == this.prevTouched) && (this.nMaxed == this.prevMaxed)) {
         this.nFramesSame++
         if (this.nFramesSame > 60) {
-          console.log("no changes for 60 frames, abort this attractor")
+          // console.log("no changes for 60 frames, abort this attractor")
           this.startNewAttractor = true;
           this.progress = 100;
           this.displayDelay = this.displayDelayDefault;
@@ -249,10 +242,10 @@ export default {
       if (percentMaxed > this.enoughMaxed) {
         this.startNewAttractor = true;
         this.displayDelay = (this.nTouched > 5000) ? this.displayDelayDefault : 0;
-        console.log(this.nTouched + " touched " + this.nMaxed + " maxed " +
-          percentMaxed + " percent " + "  Progress " + this.progress);
+        // console.log(this.nTouched + " touched " + this.nMaxed + " maxed " +
+        //  percentMaxed + " percent " + "  Progress " + this.progress);
 
-        console.log(" Enough ");
+        // console.log(" Enough ");
       }
 
       this.drawProgressBar(this.progress);
@@ -328,14 +321,14 @@ export default {
     },
     pixelx(x) {
       let px = Math.floor(((x - this.xmin) / this.xrange) * (this.width - (2 * this.margin))) + this.margin;
-      if ((px < 0) || (px > this.width)) console.log(" bad x " + px + " " + x);
+      // if ((px < 0) || (px > this.width)) console.log(" bad x " + px + " " + x);
       px = (px < 0) ? 0 : px;
       px = (px > this.width - 1) ? this.width - 1 : px;
       return px;
     },
     pixely(y) {
       let py = Math.floor(((y - this.ymin) / this.yrange) * (this.height - (2 * this.margin))) + this.margin;
-      if ((py < 0) || (py > this.height)) console.log(" bad y " + py + " " + y);
+      // if ((py < 0) || (py > this.height)) console.log(" bad y " + py + " " + y);
       py = (py < 0) ? 0 : py;
       py = (py > this.height - 1) ? this.height - 1 : py;
       return py;
