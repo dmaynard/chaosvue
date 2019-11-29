@@ -1,9 +1,9 @@
 <template>
 <div class="chaos-canvas-wrapper">
   <canvas ref="chaos-canvas" @click="resetAttractor"></canvas>
-  <span class="menu-wrapper" style="width: 60px ">
+  <span class="menu-wrapper" style="width: 100px ">
     <div v-if=menuUp>
-      <button style="float: right" class="close" v-on:click="toggleMenuUp">X</button>
+      <button class="close" v-on:click="toggleMenuUp">X</button>
       <div v-if=paused>
         <button ref="resume" class="uiButton" v-on:click="startAnimation">Resume</button>
       </div>
@@ -413,17 +413,21 @@ export default {
 <style scoped>
 button.uiButton {
   width: 100%;
+  height: 40px;
   text: centered;
   border-radius: 4px;
   background-color: Transparent;
   background-repeat: no-repeat;
-  font-size: 12px;
+  font-size: 18px;
 }
 
 button.close {
-  width: 25px;
-  float: right;
+  width: 40px;
+  float: left;
+  height: 40px;
   border-radius: 2px;
+  font-size: 18px;
+  background-color: Transparent;
 }
 
 canvas {
