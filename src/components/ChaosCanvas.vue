@@ -413,7 +413,7 @@ export default {
 <style scoped>
 button.uiButton {
   width: 100%;
-  height: 40px;
+  height: 44px;
   text: centered;
   border-radius: 4px;
   background-color: Transparent;
@@ -422,10 +422,10 @@ button.uiButton {
 }
 
 button.close {
-  width: 40px;
+  width: 44px;
   float: left;
   text: centered;
-  height: 40px;
+  height: 44px;
   border-radius: 2px;
   font-size: 18px;
   background-color: Transparent;
