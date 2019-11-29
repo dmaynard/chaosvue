@@ -424,6 +424,7 @@ button.uiButton {
 button.close {
   width: 40px;
   float: left;
+  text: centered;
   height: 40px;
   border-radius: 2px;
   font-size: 18px;
