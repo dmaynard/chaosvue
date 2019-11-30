@@ -18,10 +18,12 @@
       <div v-else>
         <button class="uiButton" v-on:click="toggleLightMode">&#x263E;</button>
       </div>
+       <button class="uiButton" v-on:click="doAbout">About</button>
     </div>
     <div v-else>
       <button style="float: left" class="close" v-on:click="toggleMenuUp">&#9776;</button>
     </div>
+
 
   </span>
 
@@ -84,7 +86,8 @@ export default {
         width: 0,
         height: 0,
       },
-      animationRequestID: null
+      animationRequestID: null,
+      aboutUrl: 'https://software-artist.com/chaotic-attractor',
     }
   },
 
@@ -385,6 +388,12 @@ export default {
     toggleMenuUp() {
       this.menuUp = !this.menuUp;
       this.ctx.putImageData(this.imageData, 0, 0);
+    },
+    doAbout() {
+      window.open(
+  this.aboutUrl,
+  '_blank' // <- This is what makes it open in a new window.
+);
     },
     drawProgressBar(progress) {
       let pButton = this.$refs['next'];
