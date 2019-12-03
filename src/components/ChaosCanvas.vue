@@ -18,7 +18,17 @@
       <div v-else>
         <button class="uiButton" v-on:click="toggleLightMode">&#x263E;</button>
       </div>
-       <button class="uiButton" v-on:click="doAbout">About</button>
+      <button class="uiButton" v-on:click="doAbout">About</button>
+      <input type="checkbox" id="checkbox" v-model="showParams">
+      <label for="checkbox">Params</label>
+      <div v-if=showParams>
+      <input v-model="paramStrings.a" v-on:click="parseParama('a')" v-on:keyup.enter="parseParama('a')">
+      <input v-model="paramStrings.b" v-on:click="parseParamb('b')" v-on:keyup.enter="parseParamb('b')">
+      <input v-model="paramStrings.c" v-on:click="parseParamc('c')" v-on:keyup.enter="parseParamc('c')">
+      <input v-model="paramStrings.d" v-on:click="parseParamd('d')" v-on:keyup.enter="parseParama('d')">
+      </div>
+
+
     </div>
     <div v-else>
       <button style="float: left" class="close" v-on:click="toggleMenuUp">&#9776;</button>
@@ -44,12 +54,23 @@ export default {
       imageData: null,
       putImageData: null,
       data: null,
-      a: 0.1,
-      b: 0.2,
-      c: 0.3,
-      d: 0.4,
-      x: 0.1,
-      y: 0.1,
+      params: {
+        a: 0.1,
+        b: 0.2,
+        c: 0.3,
+        d: 0.4,
+        x: 0.1,
+        y: 0.1
+      },
+      paramStrings: {
+        a: "",
+        b: "",
+        c: "",
+        d: "",
+        x: "",
+        y: ""
+      },
+      randomize: true,
       darkmode: false,
       doPixel: null,
       frames: 0,
@@ -88,6 +109,7 @@ export default {
       },
       animationRequestID: null,
       aboutUrl: 'https://software-artist.com/chaotic-attractor',
+      showParams: false
     }
   },
 
@@ -148,7 +170,7 @@ export default {
         this.initImageData(window.innerWidth, window.innerHeight);
       }
     },
-    initAttractor() {
+    initAttractor( randomize ) {
       this.x = 0.1;
       this.y = 0.1;
       this.frames = 0;
@@ -156,10 +178,16 @@ export default {
       this.nTouched = 0;
       this.nMaxed = 0;
       this.state = "running";
-      this.a = 3.0 * ((Math.random() * 2.0) - 1.0);
-      this.b = 3.0 * ((Math.random() * 2.0) - 1.0);
-      this.c = ((Math.random() * 2.0) - 1.0) + 0.5;
-      this.d = ((Math.random() * 2.0) - 1.0) + 0.5;
+      if ( randomize ) {
+      this.params.a = 3.0 * ((Math.random() * 2.0) - 1.0);
+      this.params.b = 3.0 * ((Math.random() * 2.0) - 1.0);
+      this.params.c = ((Math.random() * 2.0) - 1.0) + 0.5;
+      this.params.d = ((Math.random() * 2.0) - 1.0) + 0.5;
+      }
+      this.paramStrings.a = this.params.a.toString();
+      this.paramStrings.b = this.params.b.toString();
+      this.paramStrings.c = this.params.c.toString();
+      this.paramStrings.d = this.params.d.toString();
       this.xmax = -100.0;
       this.xmin = 100.0;
       this.ymax = -100.0;
@@ -223,7 +251,7 @@ export default {
       this.prevMaxed = this.nMaxed;
       this.prevTouched = this.nTouched;
 
-      this.iterateAttractor(this.startNewAttractor);
+      this.iterateAttractor(this.startNewAttractor, this.randomize);
       this.startNewAttractor = false;
       if (this.nTouched > 0 && this.nTouched < 500) {
         this.startNewAttractor = true;
@@ -275,12 +303,12 @@ export default {
       this.startNewAttractor = true;
     },
     iteratePoint: function(x, y) {
-      let nx = Math.sin(y * this.b) - (this.c * Math.sin(x * this.b));
-      let ny = Math.sin(x * this.a) + this.d * Math.cos(y * this.a);
+      let nx = Math.sin(y * this.params.b) - (this.params.c * Math.sin(x * this.params.b));
+      let ny = Math.sin(x * this.params.a) + (this.params.d * Math.cos(y * this.params.a));
       return [nx, ny];
     },
 
-    iterateAttractor(init) {
+    iterateAttractor(init, randomize) {
 
       let px = 0;
       let py = 0;
@@ -288,11 +316,12 @@ export default {
       // et ny = 0;
 
       if (init) {
-        this.initAttractor();
+        this.initAttractor(randomize);
         this.ctx.fillStyle = this.darkmode ? 'rgba(0,0,0,1.0)' : 'rgba(255,255,255,1.0)'
         this.ctx.fillRect(0, 0, this.width, this.height);
         this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
         this.data = this.imageData.data;
+        this.randomize = true;
       }
       this.frames++;
       for (var i = 0; i < (init ? this.itersFirstFrame : this.itersPerFrame); i++) {
@@ -391,9 +420,49 @@ export default {
     },
     doAbout() {
       window.open(
-  this.aboutUrl,
-  '_blank' // <- This is what makes it open in a new window.
-);
+        this.aboutUrl,
+        '_blank' // <- This is what makes it open in a new window.
+      );
+    },
+    parseParama(which) {
+      console.log(" param " + which + " " + this.params.a)
+      let x = parseFloat(this.paramStrings.a);
+      if (!isNaN(x)  &&  (x !== this.params.a)) {
+        console.log( " new parameter " + x);
+        this.params.a = x;
+        this.paramStrings.a = this.params.a.toString();
+        this.iterateAttractor (true, false);
+      }
+    },
+    parseParamb(which) {
+      console.log(" param " + which + " " + this.params.b)
+      let x = parseFloat(this.paramStrings.b);
+      if (!isNaN(x)  &&  (x !== this.params.b)) {
+        console.log( " new parameter " + x);
+        this.params.b = x;
+        this.paramStrings.b = this.params.b.toString();
+        this.iterateAttractor (true, false);
+      }
+    },
+    parseParamc(which) {
+      console.log(" param " + which + " " + this.params.c)
+      let x = parseFloat(this.paramStrings.c);
+      if (!isNaN(x)  &&  (x !== this.params.c)) {
+        console.log( " new parameter " + x);
+        this.params.c = x;
+        this.paramStrings.c = this.params.c.toString();
+        this.iterateAttractor (true, false);
+      }
+    },
+    parseParamd(which) {
+      console.log(" param " + which + " " + this.params.d)
+      let x = parseFloat(this.paramStrings.d);
+      if (!isNaN(x)  &&  (x !== this.params.d)) {
+        console.log( " new parameter " + x);
+        this.params.d = x;
+        this.paramStrings.d = this.params.d.toString();
+        this.iterateAttractor (true, false);
+      }
     },
     drawProgressBar(progress) {
       let pButton = this.$refs['next'];
