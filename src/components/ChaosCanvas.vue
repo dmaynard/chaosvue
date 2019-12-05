@@ -1,9 +1,9 @@
 <template>
 <div class="chaos-canvas-wrapper">
   <canvas ref="chaos-canvas" @click="resetAttractor"></canvas>
-  <span class="menu-wrapper" style="width: 100px ">
+  <span class="menu-wrapper" style="width: 120px ">
     <div v-if=menuUp>
-      <button class="close" v-on:click="toggleMenuUp">X</button>
+      <button class="close label" v-on:click="toggleMenuUp">X</button>
       <div v-if=paused>
         <button ref="resume" class="uiButton" v-on:click="startAnimation">Resume</button>
       </div>
@@ -19,19 +19,27 @@
         <button class="uiButton" v-on:click="toggleLightMode">&#x263E;</button>
       </div>
       <button class="uiButton" v-on:click="doAbout">About</button>
-      <input type="checkbox" id="checkbox" v-model="showParams">
-      <label for="checkbox">Params</label>
+      <div>
+        <input type="checkbox" id="checkbox" v-model="autoPause">
+        <label for="checkbox" class="label">Auto Pause</label>
+      </div>
+      <input type="checkbox" background-color="Transparent" id="checkbox" v-model="showParams">
+      <label for="checkbox" class="label">Advanced</label>
       <div v-if=showParams>
-      <input v-model="paramStrings.a" v-on:click="parseParama('a')" v-on:keyup.enter="parseParama('a')">
-      <input v-model="paramStrings.b" v-on:click="parseParamb('b')" v-on:keyup.enter="parseParamb('b')">
-      <input v-model="paramStrings.c" v-on:click="parseParamc('c')" v-on:keyup.enter="parseParamc('c')">
-      <input v-model="paramStrings.d" v-on:click="parseParamd('d')" v-on:keyup.enter="parseParama('d')">
+        <input v-model="paramStrings[0]" v-on:click="parseParams(0)" v-on:keyup.enter="parseParams(0)">
+        <input v-model="paramStrings[1]" v-on:click="parseParams(1)" v-on:keyup.enter="parseParams(1)">
+        <input v-model="paramStrings[2]" v-on:click="parseParams(2)" v-on:keyup.enter="parseParams(2)">
+        <input v-model="paramStrings[3]" v-on:click="parseParams(3)" v-on:keyup.enter="parseParams(3)">
+
+        <button ref="draw" class="uiButton" id="drawButton" v-on:click="drawAttractor">Draw</button>
+        <button ref="redraw" class="uiButton" id="redrawButton" v-on:click="redrawAttractor">Redraw</button>
+
       </div>
 
 
     </div>
     <div v-else>
-      <button style="float: left" class="close" v-on:click="toggleMenuUp">&#9776;</button>
+      <button style="float: left" class="label" v-on:click="toggleMenuUp">&#9776;</button>
     </div>
 
 
@@ -54,28 +62,18 @@ export default {
       imageData: null,
       putImageData: null,
       data: null,
-      params: {
-        a: 0.1,
-        b: 0.2,
-        c: 0.3,
-        d: 0.4,
-        x: 0.1,
-        y: 0.1
-      },
-      paramStrings: {
-        a: "",
-        b: "",
-        c: "",
-        d: "",
-        x: "",
-        y: ""
-      },
+      params:
+        [ 0.1, 0.2, 0.3, 0.4, 0.1, 0.1],
+
+      paramStrings:
+        [ "", "", "", "", "", ""],
+
       randomize: true,
       darkmode: false,
       doPixel: null,
       frames: 0,
       iters: 0,
-      itersPerFrame: 5000,
+      itersPerFrame: 9000,
       itersFirstFrame: 1000,
       nTouched: 0,
       nMaxed: 0,
@@ -109,7 +107,10 @@ export default {
       },
       animationRequestID: null,
       aboutUrl: 'https://software-artist.com/chaotic-attractor',
-      showParams: false
+      showParams: false,
+      autoPause: false,
+      msFrameBudget: 15, // should be less than 16 for 60 fps.
+      clearScreen: true
     }
   },
 
@@ -141,6 +142,7 @@ export default {
     this.paused = false;
     this.progressBar = this.$refs['next'].getBoundingClientRect();
     this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
+    this.dateObject = new Date();
   },
   methods: {
     initImageData(w, h) {
@@ -170,7 +172,7 @@ export default {
         this.initImageData(window.innerWidth, window.innerHeight);
       }
     },
-    initAttractor( randomize ) {
+    initAttractor(randomize) {
       this.x = 0.1;
       this.y = 0.1;
       this.frames = 0;
@@ -178,16 +180,16 @@ export default {
       this.nTouched = 0;
       this.nMaxed = 0;
       this.state = "running";
-      if ( randomize ) {
-      this.params.a = 3.0 * ((Math.random() * 2.0) - 1.0);
-      this.params.b = 3.0 * ((Math.random() * 2.0) - 1.0);
-      this.params.c = ((Math.random() * 2.0) - 1.0) + 0.5;
-      this.params.d = ((Math.random() * 2.0) - 1.0) + 0.5;
+      if (randomize) {
+        this.params[0] = 3.0 * ((Math.random() * 2.0) - 1.0);
+        this.params[1] = 3.0 * ((Math.random() * 2.0) - 1.0);
+        this.params[2]= ((Math.random() * 2.0) - 1.0) + 0.5;
+        this.params[3]= ((Math.random() * 2.0) - 1.0) + 0.5;
       }
-      this.paramStrings.a = this.params.a.toString();
-      this.paramStrings.b = this.params.b.toString();
-      this.paramStrings.c = this.params.c.toString();
-      this.paramStrings.d = this.params.d.toString();
+      this.paramStrings[0] = this.params[0].toString();
+      this.paramStrings[1] = this.params[1].toString();
+      this.paramStrings[2] = this.params[2].toString();
+      this.paramStrings[3] = this.params[3].toString();
       this.xmax = -100.0;
       this.xmin = 100.0;
       this.ymax = -100.0;
@@ -243,6 +245,9 @@ export default {
       }
       if (this.displayDelay > 0) {
         this.displayDelay--;
+        if (this.displayDelay == 0 && this.autoPause) {
+          this.paused = true;
+        }
         this.ctx.putImageData(this.imageData, 0, 0);
         this.drawProgressBar(this.progress);
         this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
@@ -251,8 +256,9 @@ export default {
       this.prevMaxed = this.nMaxed;
       this.prevTouched = this.nTouched;
 
-      this.iterateAttractor(this.startNewAttractor, this.randomize);
+      this.iterateAttractor(this.startNewAttractor, this.randomize, this.clearScreen);
       this.startNewAttractor = false;
+      this.clearScreen = true;
       if (this.nTouched > 0 && this.nTouched < 500) {
         this.startNewAttractor = true;
         this.displayDelay = 0;
@@ -301,36 +307,43 @@ export default {
       }
       this.displayDelay = 0;
       this.startNewAttractor = true;
+      this.randomize = true;
+      this.clearScreen = true;
     },
     iteratePoint: function(x, y) {
-      let nx = Math.sin(y * this.params.b) - (this.params.c * Math.sin(x * this.params.b));
-      let ny = Math.sin(x * this.params.a) + (this.params.d * Math.cos(y * this.params.a));
+      let nx = Math.sin(y * this.params[1]) - (this.params[2] * Math.sin(x * this.params[1]));
+      let ny = Math.sin(x * this.params[0]) + (this.params[3] * Math.cos(y * this.params[0]));
       return [nx, ny];
     },
 
-    iterateAttractor(init, randomize) {
+    iterateAttractor(init, randomize, clearScreen) {
 
       let px = 0;
       let py = 0;
       // let nx = 0;
       // et ny = 0;
+      let startTime = new Date().getTime();
+      let msElapsed = 0;
+      let loopCount = 0;
 
       if (init) {
         this.initAttractor(randomize);
-        this.ctx.fillStyle = this.darkmode ? 'rgba(0,0,0,1.0)' : 'rgba(255,255,255,1.0)'
-        this.ctx.fillRect(0, 0, this.width, this.height);
-        this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
-        this.data = this.imageData.data;
+        if (clearScreen) {
+          this.ctx.fillStyle = this.darkmode ? 'rgba(0,0,0,1.0)' : 'rgba(255,255,255,1.0)'
+          this.ctx.fillRect(0, 0, this.width, this.height);
+          this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
+          this.data = this.imageData.data;
+        }
+
         this.randomize = true;
       }
       this.frames++;
-      for (var i = 0; i < (init ? this.itersFirstFrame : this.itersPerFrame); i++) {
+      while (msElapsed < this.msFrameBudget) {
+
         /* eslint-disable no-console */
         // console.log (" x " + x + " y " + y);
         this.iters++;
-
-        // nx = Math.sin(this.y * this.b) - (this.c * Math.sin(this.x * this.b));
-        // ny = Math.sin(this.x * this.a) + this.d * Math.cos(this.y * this.a);
+        loopCount++;
         [this.x, this.y] = this.iteratePoint(this.x, this.y)
         // this.x = nx;
         // this.y = ny;
@@ -344,12 +357,17 @@ export default {
           py = this.pixely(this.y);
           this.doPixel(px, py);
         }
+        if ((loopCount & 0x3F) == 0) {
+          msElapsed = (new Date().getTime() - startTime);
+        }
       }
       if (init) {
         this.xrange = this.xmax - this.xmin
         this.yrange = this.ymax - this.ymin
+      } else {
+        this.ctx.putImageData(this.imageData, 0, 0);
       }
-      this.ctx.putImageData(this.imageData, 0, 0);
+
     },
     pixelx(x) {
       let px = Math.floor(((x - this.xmin) / this.xrange) * (this.width - (2 * this.margin))) + this.margin;
@@ -401,6 +419,12 @@ export default {
       document.getElementsByClassName("uiButton").forEach(function(element) {
         element.style.color = newColor;
       });
+      document.getElementsByClassName("uiButton").forEach(function(element) {
+        element.style.color = newColor;
+      });
+      document.getElementsByClassName("label").forEach(function(element) {
+        element.style.color = newColor;
+      });
     },
     toggleLightMode() {
       this.darkmode = !this.darkmode;
@@ -418,52 +442,42 @@ export default {
       this.menuUp = !this.menuUp;
       this.ctx.putImageData(this.imageData, 0, 0);
     },
+    drawAttractor() {
+      if (this.paused) {
+        this.paused = false;
+        this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
+      }
+      this.displayDelay = 0;
+
+      this.clearScreen = false;
+      this.randomize = false;
+    },
+    redrawAttractor() {
+      if (this.paused) {
+        this.paused = false;
+        this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
+      }
+      this.displayDelay = 0;
+      this.startNewAttractor = true;
+      this.clearScreen = true;
+      this.randomize = false;
+    },
     doAbout() {
       window.open(
         this.aboutUrl,
         '_blank' // <- This is what makes it open in a new window.
       );
     },
-    parseParama(which) {
-      console.log(" param " + which + " " + this.params.a)
-      let x = parseFloat(this.paramStrings.a);
-      if (!isNaN(x)  &&  (x !== this.params.a)) {
-        console.log( " new parameter " + x);
-        this.params.a = x;
-        this.paramStrings.a = this.params.a.toString();
-        this.iterateAttractor (true, false);
+    parseParams(which) {
+      console.log(" param " + which + " " + this.params[which])
+      let x = parseFloat(this.paramStrings[which]);
+      if (!isNaN(x) && (x !== this.params[which])) {
+        console.log(" new parameter " + x);
+        this.params[which] = x;
+        this.paramStrings[which] = this.params[which].toString();
       }
     },
-    parseParamb(which) {
-      console.log(" param " + which + " " + this.params.b)
-      let x = parseFloat(this.paramStrings.b);
-      if (!isNaN(x)  &&  (x !== this.params.b)) {
-        console.log( " new parameter " + x);
-        this.params.b = x;
-        this.paramStrings.b = this.params.b.toString();
-        this.iterateAttractor (true, false);
-      }
-    },
-    parseParamc(which) {
-      console.log(" param " + which + " " + this.params.c)
-      let x = parseFloat(this.paramStrings.c);
-      if (!isNaN(x)  &&  (x !== this.params.c)) {
-        console.log( " new parameter " + x);
-        this.params.c = x;
-        this.paramStrings.c = this.params.c.toString();
-        this.iterateAttractor (true, false);
-      }
-    },
-    parseParamd(which) {
-      console.log(" param " + which + " " + this.params.d)
-      let x = parseFloat(this.paramStrings.d);
-      if (!isNaN(x)  &&  (x !== this.params.d)) {
-        console.log( " new parameter " + x);
-        this.params.d = x;
-        this.paramStrings.d = this.params.d.toString();
-        this.iterateAttractor (true, false);
-      }
-    },
+
     drawProgressBar(progress) {
       let pButton = this.$refs['next'];
 
@@ -496,7 +510,7 @@ button.uiButton {
   border-radius: 4px;
   background-color: Transparent;
   background-repeat: no-repeat;
-  font-size: 18px;
+  font-size: 16px;
 }
 
 button.close {
@@ -505,7 +519,7 @@ button.close {
   text: centered;
   height: 44px;
   border-radius: 2px;
-  font-size: 18px;
+  font-size: 16px;
   background-color: Transparent;
 }
 
