@@ -3,43 +3,53 @@
   <canvas ref="chaos-canvas" @click="resetAttractor"></canvas>
   <span class="menu-wrapper" style="width: 120px ">
     <div v-if=menuUp>
-      <button class="close label" v-on:click="toggleMenuUp">X</button>
+      <button class="close labeltag" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="toggleMenuUp">X</button>
       <div v-if=paused>
-        <button ref="resume" class="uiButton" v-on:click="startAnimation">Resume</button>
+        <button ref="resume" class="uiButton"  v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="startAnimation">Resume</button>
       </div>
       <div v-else>
-        <button ref="pause" class="uiButton" id="pauseButton" v-on:click="pauseAnimation">Pause</button>
+        <button ref="pause" class="uiButton" id="pauseButton"  v-bind:class="{dark: darkmode, light: !darkmode}" v-on:click="pauseAnimation">Pause</button>
       </div>
-      <button ref="next" class="uiButton" v-on:click="resetAttractor">Next</button>
+      <button ref="next" class="uiButton" v-bind:class="{dark: darkmode, light: !darkmode }"  v-on:click="resetAttractor">Next</button>
 
       <div v-if=darkmode>
-        <button class="uiButton" v-on:click="toggleLightMode">&#x2600;</button>
+        <button class="uiButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="toggleLightMode">&#x2600;</button>
       </div>
       <div v-else>
-        <button class="uiButton" v-on:click="toggleLightMode">&#x263E;</button>
+        <button class="uiButton" v-bind:class="{dark: darkmode, light: lightmode }" v-on:click="toggleLightMode">&#x263E;</button>
       </div>
-      <button class="uiButton" v-on:click="doAbout">About</button>
+      <button class="uiButton" v-bind:class="{dark: darkmode, light: lightmode }" v-on:click="doAbout">About</button>
       <div>
-        <input type="checkbox" id="checkbox" v-model="autoPause">
-        <label for="checkbox" class="label">Auto Pause</label>
+        <input type="checkbox" id="checkbox"  v-model="autoPause">
+        <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: lightmode }">Auto Pause</label>
       </div>
-      <input type="checkbox" background-color="Transparent" id="checkbox" v-model="showParams">
-      <label for="checkbox" class="label">Advanced</label>
-      <div v-if=showParams>
-        <input v-model="paramStrings[0]" v-on:click="parseParams(0)" v-on:keyup.enter="parseParams(0)">
-        <input v-model="paramStrings[1]" v-on:click="parseParams(1)" v-on:keyup.enter="parseParams(1)">
-        <input v-model="paramStrings[2]" v-on:click="parseParams(2)" v-on:keyup.enter="parseParams(2)">
-        <input v-model="paramStrings[3]" v-on:click="parseParams(3)" v-on:keyup.enter="parseParams(3)">
-
-        <button ref="draw" class="uiButton" id="drawButton" v-on:click="drawAttractor">Draw</button>
-        <button ref="redraw" class="uiButton" id="redrawButton" v-on:click="redrawAttractor">Redraw</button>
+      <input type="checkbox" background-color="Transparent" id="checkbox" v-model="advancedMode">
+      <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }"> Advanced</label>
+      <div v-if=advancedMode>
+        <button ref="redraw" class="uiButton" id="redrawButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="redrawAttractor">Clear</button>
+        <div>
+          <input type="checkbox" background-color="Transparent" id="redcheckbox" v-model="red">
+          <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[0]}}</label>
+        </div>
+        <div>
+          <input type="checkbox" background-color="Transparent" id="greencheckbox" v-model="green">
+          <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[1]}}</label>
+        </div>
+        <div>
+          <input type="checkbox" background-color="Transparent" id="bluecheckbox" v-model="blue">
+          <label for="checkbox"  v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[2]}}</label>
+        </div>
+        <input v-model="paramStrings[0]" v-on:click="parseParams(0)" v-on:keyup.enter="parseParams(0)" @change="onInputChange(0)">
+        <input v-model="paramStrings[1]" v-on:click="parseParams(1)" v-on:keyup.enter="parseParams(1)" @change="onInputChange(1)">
+        <input v-model="paramStrings[2]" v-on:click="parseParams(2)" v-on:keyup.enter="parseParams(2)" @change="onInputChange(2)">
+        <input v-model="paramStrings[3]" v-on:click="parseParams(3)" v-on:keyup.enter="parseParams(3)" @change="onInputChange(3)">
 
       </div>
 
 
     </div>
     <div v-else>
-      <button style="float: left" class="label" v-on:click="toggleMenuUp">&#9776;</button>
+      <button style="float: left" class="close labeltag" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="toggleMenuUp">&#9776;</button>
     </div>
 
 
@@ -62,11 +72,9 @@ export default {
       imageData: null,
       putImageData: null,
       data: null,
-      params:
-        [ 0.1, 0.2, 0.3, 0.4, 0.1, 0.1],
+      params: [0.1, 0.2, 0.3, 0.4, 0.1, 0.1],
 
-      paramStrings:
-        [ "", "", "", "", "", ""],
+      paramStrings: ["", "", "", "", "", ""],
 
       randomize: true,
       darkmode: false,
@@ -107,10 +115,17 @@ export default {
       },
       animationRequestID: null,
       aboutUrl: 'https://software-artist.com/chaotic-attractor',
-      showParams: false,
+      advancedMode: false,
       autoPause: false,
       msFrameBudget: 15, // should be less than 16 for 60 fps.
-      clearScreen: true
+      clearScreen: true,
+      red: true,
+      green: true,
+      blue: true,
+      additiveColors: ["Red", "Green", "Blue"],
+      subtractiveColors: ["Cyan", "Magenta", "Yellow"],
+      colors: []
+
     }
   },
 
@@ -143,6 +158,7 @@ export default {
     this.progressBar = this.$refs['next'].getBoundingClientRect();
     this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
     this.dateObject = new Date();
+    this.colors = this.darkMode ? this.additaveColors : this.subtractiveColors;
   },
   methods: {
     initImageData(w, h) {
@@ -183,8 +199,8 @@ export default {
       if (randomize) {
         this.params[0] = 3.0 * ((Math.random() * 2.0) - 1.0);
         this.params[1] = 3.0 * ((Math.random() * 2.0) - 1.0);
-        this.params[2]= ((Math.random() * 2.0) - 1.0) + 0.5;
-        this.params[3]= ((Math.random() * 2.0) - 1.0) + 0.5;
+        this.params[2] = ((Math.random() * 2.0) - 1.0) + 0.5;
+        this.params[3] = ((Math.random() * 2.0) - 1.0) + 0.5;
       }
       this.paramStrings[0] = this.params[0].toString();
       this.paramStrings[1] = this.params[1].toString();
@@ -241,6 +257,7 @@ export default {
     doAnimation: function() { // called every frame
       const startTime = new Date().getTime();
       if (this.paused) {
+        this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
         return; // breaks the animation callback chain
       }
       if (this.displayDelay > 0) {
@@ -276,7 +293,7 @@ export default {
       let percentMaxed = (this.nMaxed * 100 / this.nTouched);
       this.progress = Math.min(((percentMaxed * 100.) / this.enoughMaxed), 100.);
       this.drawProgressBar(this.progress);
-      if (percentMaxed > this.enoughMaxed) {
+      if (percentMaxed > this.enoughMaxed && !this.advancedMode) {
         this.startNewAttractor = true;
         this.displayDelay = (this.nTouched > 5000) ? this.displayDelayDefault : 0;
         // console.log(this.nTouched + " touched " + this.nMaxed + " maxed " +
@@ -295,7 +312,7 @@ export default {
     },
     startAnimation: function() {
       this.paused = false;
-      this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
+      // this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
     },
     pauseAnimation() {
       this.paused = true;
@@ -303,7 +320,7 @@ export default {
     resetAttractor() {
       if (this.paused) {
         this.paused = false;
-        this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
+        // this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
       }
       this.displayDelay = 0;
       this.startNewAttractor = true;
@@ -335,7 +352,7 @@ export default {
           this.data = this.imageData.data;
         }
 
-        this.randomize = true;
+        // this.randomize = true;
       }
       this.frames++;
       while (msElapsed < this.msFrameBudget) {
@@ -385,23 +402,31 @@ export default {
     },
     incPixel(x, y) {
       let i = (y * this.width + x) * 4;
-      if (this.data[i] == 0) this.nTouched++;
-      if (this.data[i] == 254) this.nMaxed++;
+      if ((this.data[i] == 0) && (this.data[i + 1] == 0) && (this.data[i + 2] == 0)) {
+        this.nTouched++;
+      }
+      if ((this.data[i] == 254) || (this.data[i + 1] == 254) || (this.data[i + 2] == 254)) {
+        this.nMaxed++;
+      }
       if (this.data[i] < 255) {
-        this.data[i] += 1;
-        this.data[i + 1] += 1;
-        this.data[i + 2] += 1;
+        this.data[i] += this.red ? 1 : 0;
+        this.data[i + 1] += this.green ? 1 : 0;
+        this.data[i + 2] += this.blue ? 1 : 0;
       }
       // this.data[i + 3] = 255;
     },
     decPixel(x, y) {
       let i = (y * this.width + x) * 4;
-      if (this.data[i] == 255) this.nTouched++;
-      if (this.data[i] == 1) this.nMaxed++;
+      if ((this.data[i] == 255) && (this.data[i + 1] == 255) && (this.data[i + 2] == 255)) {
+        this.nTouched++;
+      }
+      if ((this.data[i] == 1) || (this.data[i + 1] == 1) || (this.data[i + 2] == 1)) {
+        this.nMaxed++;
+      }
       if (this.data[i] > 0) {
-        this.data[i] += -1;
-        this.data[i + 1] += -1;
-        this.data[i + 2] += -1;
+        this.data[i] += (this.red) ? -1 : 0;
+        this.data[i + 1] += (this.green) ? -1 : 0;
+        this.data[i + 2] += (this.blue) ? -1 : 0;
       }
       // this.data[i + 3] = 255;
     },
@@ -414,49 +439,33 @@ export default {
         console.log(" not grayscale " + this.data[i] + this.data[i + 1]);
       }
     },
-    setMenuText(darkMode) {
-      let newColor = darkMode ? 'white' : 'black';
-      document.getElementsByClassName("uiButton").forEach(function(element) {
-        element.style.color = newColor;
-      });
-      document.getElementsByClassName("uiButton").forEach(function(element) {
-        element.style.color = newColor;
-      });
-      document.getElementsByClassName("label").forEach(function(element) {
-        element.style.color = newColor;
-      });
-    },
+  
     toggleLightMode() {
       this.darkmode = !this.darkmode;
-      this.setMenuText(this.darkmode);
+      // this.setMenuText(this.darkmode);
       if (this.darkmode) {
         this.invert(0xFF, 0xFF, 0xFF);
         this.doPixel = this.incPixel;
+        this.colors = this.additiveColors;
       } else {
         this.invert(0xFF, 0xFF, 0xFF);
         this.doPixel = this.decPixel;
+        this.colors = this.subtractiveColors;
       }
       this.ctx.putImageData(this.imageData, 0, 0);
     },
     toggleMenuUp() {
       this.menuUp = !this.menuUp;
+      // this.setMenuText(this.darkmode);
       this.ctx.putImageData(this.imageData, 0, 0);
     },
     drawAttractor() {
-      if (this.paused) {
-        this.paused = false;
-        this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
-      }
       this.displayDelay = 0;
-
       this.clearScreen = false;
       this.randomize = false;
     },
     redrawAttractor() {
-      if (this.paused) {
-        this.paused = false;
-        this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
-      }
+
       this.displayDelay = 0;
       this.startNewAttractor = true;
       this.clearScreen = true;
@@ -477,24 +486,28 @@ export default {
         this.paramStrings[which] = this.params[which].toString();
       }
     },
+    onInputChange(which) {
+      console.log(" onInputChange " + which + " " + this.params[which])
+    },
 
     drawProgressBar(progress) {
       let pButton = this.$refs['next'];
 
-      if (pButton) {
-        if (this.displayDelay == 0) {
-          this.ctx.fillStyle = 'rgba(0,225,0,0.3)';
-          this.ctx.fillRect(this.progressBar.x, this.progressBar.y + 1,
-            (progress * pButton.clientWidth / 100.), pButton.clientHeight);
-        } else {
-          this.ctx.fillStyle = 'rgba(0,225,0,0.5)';
-          this.ctx.fillRect(this.progressBar.x, this.progressBar.y + 1,
-            pButton.clientWidth, pButton.clientHeight)
-          this.ctx.fillStyle = 'rgba(225,255,0,0.5)';
-          this.ctx.fillRect(this.progressBar.x, this.progressBar.y + 1,
-            (((this.displayDelayDefault - this.displayDelay) / this.displayDelayDefault) * pButton.clientWidth), pButton.clientHeight);
+      if (pButton) { // the button is showing
+        if (!this.advancedMode) {
+          if (this.displayDelay == 0) {
+            this.ctx.fillStyle = 'rgba(0,225,0,0.3)';
+            this.ctx.fillRect(this.progressBar.x, this.progressBar.y + 1,
+              (progress * pButton.clientWidth / 100.), pButton.clientHeight);
+          } else {
+            this.ctx.fillStyle = 'rgba(0,225,0,0.5)';
+            this.ctx.fillRect(this.progressBar.x, this.progressBar.y + 1,
+              pButton.clientWidth, pButton.clientHeight)
+            this.ctx.fillStyle = 'rgba(225,255,0,0.5)';
+            this.ctx.fillRect(this.progressBar.x, this.progressBar.y + 1,
+              (((this.displayDelayDefault - this.displayDelay) / this.displayDelayDefault) * pButton.clientWidth), pButton.clientHeight);
+          }
         }
-
       }
     }
   },
@@ -506,16 +519,21 @@ export default {
 button.uiButton {
   width: 100%;
   height: 44px;
-  text: centered;
+  text-align: centered;
   border-radius: 4px;
   background-color: Transparent;
   background-repeat: no-repeat;
   font-size: 16px;
 }
-
+button.dark {
+  color: white;
+}
+button.light {
+  color: black;
+}
 button.close {
   width: 44px;
-  float: left;
+  float: right;
   text: centered;
   height: 44px;
   border-radius: 2px;
@@ -523,10 +541,19 @@ button.close {
   background-color: Transparent;
 }
 
+input[type=checkbox] {
+  transform: scale(1.5);
+}
+
 canvas {
   display: span;
 }
-
+label.labellight {
+  color: black;
+}
+label.labeldark {
+  color: white;
+}
 span.menu-wrapper {
   position: absolute;
   top: 10px;
