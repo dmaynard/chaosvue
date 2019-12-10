@@ -43,16 +43,11 @@
         <input v-model="paramStrings[1]" v-on:click="parseParams(1)" v-on:keyup.enter="parseParams(1)" @change="onInputChange(1)">
         <input v-model="paramStrings[2]" v-on:click="parseParams(2)" v-on:keyup.enter="parseParams(2)" @change="onInputChange(2)">
         <input v-model="paramStrings[3]" v-on:click="parseParams(3)" v-on:keyup.enter="parseParams(3)" @change="onInputChange(3)">
-
       </div>
-
-
     </div>
     <div v-else>
       <button style="float: left" class="close labeltag" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="toggleMenuUp">&#9776;</button>
     </div>
-
-
   </span>
 
 </div>
@@ -113,6 +108,12 @@ export default {
         width: 0,
         height: 0,
       },
+      spinner: {
+        x: 0,
+        y: 0,
+        radius: 0
+      },
+      frameAngle: ((Math.PI / 3.0) / 60.0),
       animationRequestID: null,
       aboutUrl: 'https://software-artist.com/chaotic-attractor',
       advancedMode: false,
@@ -156,6 +157,9 @@ export default {
     this.doPixel = this.darkmode ? this.incPixel : this.decPixel;
     this.paused = false;
     this.progressBar = this.$refs['next'].getBoundingClientRect();
+    this.spinner.radius = this.progressBar.height/2 - 4;
+    this.spinner.x  =  this.progressBar.x + this.progressBar.width/2;
+    this.spinner.y  =  this.progressBar.y + this.progressBar.height/2;
     this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
     this.dateObject = new Date();
     this.colors = this.darkMode ? this.additaveColors : this.subtractiveColors;
@@ -439,10 +443,9 @@ export default {
         console.log(" not grayscale " + this.data[i] + this.data[i + 1]);
       }
     },
-  
+
     toggleLightMode() {
       this.darkmode = !this.darkmode;
-      // this.setMenuText(this.darkmode);
       if (this.darkmode) {
         this.invert(0xFF, 0xFF, 0xFF);
         this.doPixel = this.incPixel;
@@ -456,7 +459,6 @@ export default {
     },
     toggleMenuUp() {
       this.menuUp = !this.menuUp;
-      // this.setMenuText(this.darkmode);
       this.ctx.putImageData(this.imageData, 0, 0);
     },
     drawAttractor() {
@@ -465,7 +467,6 @@ export default {
       this.randomize = false;
     },
     redrawAttractor() {
-
       this.displayDelay = 0;
       this.startNewAttractor = true;
       this.clearScreen = true;
@@ -478,10 +479,10 @@ export default {
       );
     },
     parseParams(which) {
-      console.log(" param " + which + " " + this.params[which])
+      // console.log(" param " + which + " " + this.params[which])
       let x = parseFloat(this.paramStrings[which]);
       if (!isNaN(x) && (x !== this.params[which])) {
-        console.log(" new parameter " + x);
+        // console.log(" new parameter " + x);
         this.params[which] = x;
         this.paramStrings[which] = this.params[which].toString();
       }
@@ -507,6 +508,21 @@ export default {
             this.ctx.fillRect(this.progressBar.x, this.progressBar.y + 1,
               (((this.displayDelayDefault - this.displayDelay) / this.displayDelayDefault) * pButton.clientWidth), pButton.clientHeight);
           }
+        } else {
+           this.ctx.strokeStyle = 'rgba(0,225,0,0.3)';
+           this.ctx.lineWidth = 4;
+
+           let angleInc = this.frameAngle * ((this.frames)%120);
+           let startAngle = angleInc;
+           for (let i = 0; i<3; i++ ) {
+             this.ctx.beginPath();
+             this.ctx.arc(this.spinner.x, this.spinner.y, this.spinner.radius,
+                startAngle,
+                (startAngle)+Math.PI/3.);
+              this.ctx.stroke();
+              startAngle = startAngle + (2.0 * Math.PI / 3.0);
+           }
+
         }
       }
     }
