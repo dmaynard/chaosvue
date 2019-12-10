@@ -5,12 +5,12 @@
     <div v-if=menuUp>
       <button class="close labeltag" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="toggleMenuUp">X</button>
       <div v-if=paused>
-        <button ref="resume" class="uiButton"  v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="startAnimation">Resume</button>
+        <button ref="resume" class="uiButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="startAnimation">Resume</button>
       </div>
       <div v-else>
-        <button ref="pause" class="uiButton" id="pauseButton"  v-bind:class="{dark: darkmode, light: !darkmode}" v-on:click="pauseAnimation">Pause</button>
+        <button ref="pause" class="uiButton" id="pauseButton" v-bind:class="{dark: darkmode, light: !darkmode}" v-on:click="pauseAnimation">Pause</button>
       </div>
-      <button ref="next" class="uiButton" v-bind:class="{dark: darkmode, light: !darkmode }"  v-on:click="resetAttractor">Next</button>
+      <button ref="next" class="uiButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="resetAttractor">Next</button>
 
       <div v-if=darkmode>
         <button class="uiButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="toggleLightMode">&#x2600;</button>
@@ -20,7 +20,7 @@
       </div>
       <button class="uiButton" v-bind:class="{dark: darkmode, light: lightmode }" v-on:click="doAbout">About</button>
       <div>
-        <input type="checkbox" id="checkbox"  v-model="autoPause">
+        <input type="checkbox" id="checkbox" v-model="autoPause">
         <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: lightmode }">Auto Pause</label>
       </div>
       <input type="checkbox" background-color="Transparent" id="checkbox" v-model="advancedMode">
@@ -37,7 +37,7 @@
         </div>
         <div>
           <input type="checkbox" background-color="Transparent" id="bluecheckbox" v-model="blue">
-          <label for="checkbox"  v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[2]}}</label>
+          <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[2]}}</label>
         </div>
         <input v-model="paramStrings[0]" v-on:click="parseParams(0)" v-on:keyup.enter="parseParams(0)" @change="onInputChange(0)">
         <input v-model="paramStrings[1]" v-on:click="parseParams(1)" v-on:keyup.enter="parseParams(1)" @change="onInputChange(1)">
@@ -157,9 +157,9 @@ export default {
     this.doPixel = this.darkmode ? this.incPixel : this.decPixel;
     this.paused = false;
     this.progressBar = this.$refs['next'].getBoundingClientRect();
-    this.spinner.radius = this.progressBar.height/2 - 4;
-    this.spinner.x  =  this.progressBar.x + this.progressBar.width/2;
-    this.spinner.y  =  this.progressBar.y + this.progressBar.height/2;
+    this.spinner.radius = this.progressBar.height / 2 - 4;
+    this.spinner.x = this.progressBar.x + this.progressBar.width / 2;
+    this.spinner.y = this.progressBar.y + this.progressBar.height / 2;
     this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
     this.dateObject = new Date();
     this.colors = this.darkMode ? this.additaveColors : this.subtractiveColors;
@@ -286,11 +286,15 @@ export default {
       }
       if ((this.nTouched == this.prevTouched) && (this.nMaxed == this.prevMaxed)) {
         this.nFramesSame++
-        if (this.nFramesSame > 60) {
-          // console.log("no changes for 60 frames, abort this attractor")
-          this.startNewAttractor = true;
-          this.progress = 100;
-          this.displayDelay = this.displayDelayDefault;
+        if (this.nFramesSame > 120) {
+          // console.log("no changes for 120 frames, abort or pause this attractor")
+          if (this.advancedMode) {
+            this.paused = true;
+          } else {
+            this.startNewAttractor = true;
+            this.progress = 100;
+            this.displayDelay = this.displayDelayDefault;
+          }
         }
       }
 
@@ -509,19 +513,19 @@ export default {
               (((this.displayDelayDefault - this.displayDelay) / this.displayDelayDefault) * pButton.clientWidth), pButton.clientHeight);
           }
         } else {
-           this.ctx.strokeStyle = 'rgba(0,225,0,0.3)';
-           this.ctx.lineWidth = 4;
+          this.ctx.strokeStyle = 'rgba(0,250,0,0.3)';
+          this.ctx.lineWidth = 4;
 
-           let angleInc = this.frameAngle * ((this.frames)%120);
-           let startAngle = angleInc;
-           for (let i = 0; i<3; i++ ) {
-             this.ctx.beginPath();
-             this.ctx.arc(this.spinner.x, this.spinner.y, this.spinner.radius,
-                startAngle,
-                (startAngle)+Math.PI/3.);
-              this.ctx.stroke();
-              startAngle = startAngle + (2.0 * Math.PI / 3.0);
-           }
+          let angleInc = this.frameAngle * ((this.frames) % 120);
+          let startAngle = angleInc;
+          for (let i = 0; i < 3; i++) {
+            this.ctx.beginPath();
+            this.ctx.arc(this.spinner.x, this.spinner.y, this.spinner.radius,
+              startAngle,
+              (startAngle) + Math.PI / 3.);
+            this.ctx.stroke();
+            startAngle = startAngle + (2.0 * Math.PI / 3.0);
+          }
 
         }
       }
@@ -541,12 +545,15 @@ button.uiButton {
   background-repeat: no-repeat;
   font-size: 16px;
 }
+
 button.dark {
   color: white;
 }
+
 button.light {
   color: black;
 }
+
 button.close {
   width: 44px;
   float: right;
@@ -564,12 +571,15 @@ input[type=checkbox] {
 canvas {
   display: span;
 }
+
 label.labellight {
   color: black;
 }
+
 label.labeldark {
   color: white;
 }
+
 span.menu-wrapper {
   position: absolute;
   top: 10px;
