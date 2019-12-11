@@ -1,6 +1,6 @@
 <template>
 <div class="chaos-canvas-wrapper">
-  <canvas ref="chaos-canvas" @click="resetAttractor"></canvas>
+  <canvas ref="chaos-canvas" @click="resetAttractor(false)"></canvas>
   <span class="menu-wrapper" style="width: 120px ">
     <div v-if=menuUp>
       <button class="close labeltag" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="toggleMenuUp">X</button>
@@ -10,7 +10,7 @@
       <div v-else>
         <button ref="pause" class="uiButton" id="pauseButton" v-bind:class="{dark: darkmode, light: !darkmode}" v-on:click="pauseAnimation">Pause</button>
       </div>
-      <button ref="next" class="uiButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="resetAttractor">Next</button>
+      <button ref="next" class="uiButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="resetAttractor(true)">Next</button>
 
       <div v-if=darkmode>
         <button class="uiButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="toggleLightMode">&#x2600;</button>
@@ -21,10 +21,10 @@
       <button class="uiButton" v-bind:class="{dark: darkmode, light: lightmode }" v-on:click="doAbout">About</button>
       <div>
         <input type="checkbox" id="checkbox" v-model="autoPause">
-        <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: lightmode }">Auto Pause</label>
+        <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: lightmode }">  Auto Pause</label>
       </div>
       <input type="checkbox" background-color="Transparent" id="checkbox" v-model="advancedMode">
-      <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }"> Advanced</label>
+      <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">  Advanced</label>
       <div v-if=advancedMode>
         <button ref="redraw" class="uiButton" id="redrawButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="redrawAttractor">Clear</button>
         <div>
@@ -39,10 +39,10 @@
           <input type="checkbox" background-color="Transparent" id="bluecheckbox" v-model="blue">
           <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[2]}}</label>
         </div>
-        <input v-model="paramStrings[0]" v-on:click="parseParams(0)" v-on:keyup.enter="parseParams(0)" @change="onInputChange(0)">
-        <input v-model="paramStrings[1]" v-on:click="parseParams(1)" v-on:keyup.enter="parseParams(1)" @change="onInputChange(1)">
-        <input v-model="paramStrings[2]" v-on:click="parseParams(2)" v-on:keyup.enter="parseParams(2)" @change="onInputChange(2)">
-        <input v-model="paramStrings[3]" v-on:click="parseParams(3)" v-on:keyup.enter="parseParams(3)" @change="onInputChange(3)">
+        <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[0]" v-on:click="parseParams(0)" v-on:keyup.enter="parseParams(0)" @change="onInputChange(0)">
+        <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[1]" v-on:click="parseParams(1)" v-on:keyup.enter="parseParams(1)" @change="onInputChange(1)">
+        <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[2]" v-on:click="parseParams(2)" v-on:keyup.enter="parseParams(2)" @change="onInputChange(2)">
+        <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[3]" v-on:click="parseParams(3)" v-on:keyup.enter="parseParams(3)" @change="onInputChange(3)">
       </div>
     </div>
     <div v-else>
@@ -183,7 +183,6 @@ export default {
       } else {
         this.fillImage(0xFF, 0xFF, 0xFF);
       }
-
       this.ctx.putImageData(this.imageData, 0, 0);
 
     },
@@ -325,7 +324,10 @@ export default {
     pauseAnimation() {
       this.paused = true;
     },
-    resetAttractor() {
+    resetAttractor(forceNext) {
+      if ( this.advancedMode  && ! forceNext) {
+        return;
+      }
       if (this.paused) {
         this.paused = false;
         // this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
@@ -473,7 +475,12 @@ export default {
     redrawAttractor() {
       this.displayDelay = 0;
       this.startNewAttractor = true;
-      this.clearScreen = true;
+      if (this.darkMode) {
+        this.fillImage(0,0,0);
+      } else {
+        this.fillImage(255,255,255);
+      }
+      this.ctx.putImageData(this.imageData, 0, 0);
       this.randomize = false;
     },
     doAbout() {
@@ -580,6 +587,17 @@ label.labeldark {
   color: white;
 }
 
+input.numInputDark {
+   height: 24px;
+   color: white;
+   background-color: Transparent;
+}
+
+input.numInputLight {
+   height: 24px;
+   color: black;
+   background-color: Transparent;
+}
 span.menu-wrapper {
   position: absolute;
   top: 10px;
