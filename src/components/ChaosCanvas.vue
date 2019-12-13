@@ -43,33 +43,33 @@
 
         <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[0]" v-on:click="parseParams(0)" v-on:keyup.enter="parseParams(0)" @change="onInputChange(0)">
         <span>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,0)">&#x2B07;&#x2B07;</button>
+        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,0)">&#x27F1;</button>
         <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,1)">&#x2B07;</button>
         <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,2)">&#x2B06;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,3)">&#x2B06;&#x2B06;</button>
+        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,3)">&#x27F0;</button>
         </span>
 
         <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[1]" v-on:click="parseParams(1)" v-on:keyup.enter="parseParams(1)" @change="onInputChange(1)">
         <span>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,0)">&#x2B07;&#x2B07;</button>
+        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,0)">&#x27F1;</button>
         <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,1)">&#x2B07;</button>
         <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,2)">&#x2B06;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,3)">&#x2B06;&#x2B06;</button>
+        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,3)">&#x27F0;</button>
         </span>
 
         <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[2]" v-on:click="parseParams(2)" v-on:keyup.enter="parseParams(2)" @change="onInputChange(2)">
         <span>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,0)">&#x2B07;&#x2B07;</button>
+        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,0)">&#x27F1;</button>
         <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,1)">&#x2B07;</button>
         <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,2)">&#x2B06;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,3)">&#x2B06;&#x2B06;</button>
+        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,3)">&#x27F0;</button>
         </span>
         <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[3]" v-on:click="parseParams(3)" v-on:keyup.enter="parseParams(3)" @change="onInputChange(3)">
         <span>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,0)">&#x2B07;&#x2B07;</button>
+        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,0)">&#x27F1;</button>
         <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,1)">&#x2B07;</button>
         <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,2)">&#x2B06;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,3)">&#x2B06;&#x2B06;</button>
+        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,3)">&#x27F0;</button>
         </span>
       </div>
     </div>
