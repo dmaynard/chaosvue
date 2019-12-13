@@ -15,7 +15,7 @@
 import Vue from 'vue';
 import ChaosCanvas from './components/ChaosCanvas.vue';
 Vue.config.errorHandler = function(err, vm, info) {
-  
+
   alert(`Error: ${err.toString()}\nInfo: ${info}`)
 }
 
@@ -27,10 +27,7 @@ export default {
 
   data () {
     return {
-      a: 0.1,
-      b: 0.2,
-      c: 0.3,
-      d: 0.4
+      darkmode: false
     }
   }
 
@@ -55,5 +52,7 @@ html, body {
   width: 100vw;
   padding: 20px;
   box-sizing: border-box;
+
 }
+
 </style>
