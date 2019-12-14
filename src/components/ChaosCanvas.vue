@@ -19,57 +19,59 @@
         <button class="uiButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="toggleLightMode">&#x263E;</button>
       </div>
       <button class="uiButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="doAbout">About</button>
-      <div>
-        <input type="checkbox" id="checkbox" v-model="autoPause">
-        <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">  Auto Pause</label>
+      <div class="checkdiv">
+        <input class="inline" type="checkbox" id="autoPause" v-model="autoPause">
+        <label class="inline" for="autoPause" v-bind:class="{labeldark: darkmode, labellight: !darkmode }"> Auto Pause</label>
       </div>
-      <input type="checkbox" background-color="Transparent" id="checkbox" v-model="advancedMode">
-      <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">  Advanced</label>
+      <div class="checkdiv">
+      <input class="inline" type="checkbox" id="advanceMode" background-color="Transparent" v-model="advancedMode">
+      <label class="inline" for="advanceMode" v-bind:class="{labeldark: darkmode, labellight: !darkmode }"> Advanced</label>
+      </div>
       <div v-if=advancedMode>
         <button ref="redraw" class="uiButton" id="redrawButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="redrawAttractor">Clear</button>
-        <div>
-          <input type="checkbox" background-color="Transparent" id="redcheckbox" v-model="red">
-          <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[0]}}</label>
+        <div class="checkdiv">
+          <input class="inline" type="checkbox" id="redcheck" background-color="Transparent" v-model="red">
+          <label class="inline" for="redcheck" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[0]}}</label>
         </div>
-        <div>
-          <input type="checkbox" background-color="Transparent" id="greencheckbox" v-model="green">
-          <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[1]}}</label>
+        <div class="checkdiv">
+          <input class="inline" type="checkbox" background-color="Transparent" id="greencheckbox" v-model="green">
+          <label class="inline" for="greencheckbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[1]}}</label>
         </div>
-        <div>
-          <input type="checkbox" background-color="Transparent" id="bluecheckbox" v-model="blue">
-          <label for="checkbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[2]}}</label>
+        <div class="checkdiv">
+          <input class="inline" type="checkbox" background-color="Transparent" id="bluecheckbox" v-model="blue">
+          <label class="inline" for="bluecheckbox" v-bind:class="{labeldark: darkmode, labellight: !darkmode }">{{colors[2]}}</label>
         </div>
 
 
         <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[0]" v-on:click="parseParams(0)" v-on:keyup.enter="parseParams(0)" @change="onInputChange(0)">
         <span>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,0)">&#x27F1;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,1)">&#x2B07;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,2)">&#x2B06;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,3)">&#x27F0;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,0)">&#x27F1;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,1)">&#x2B07;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,2)">&#x2B06;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(0,3)">&#x27F0;</button>
         </span>
 
         <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[1]" v-on:click="parseParams(1)" v-on:keyup.enter="parseParams(1)" @change="onInputChange(1)">
         <span>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,0)">&#x27F1;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,1)">&#x2B07;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,2)">&#x2B06;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,3)">&#x27F0;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,0)">&#x27F1;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,1)">&#x2B07;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,2)">&#x2B06;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(1,3)">&#x27F0;</button>
         </span>
 
         <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[2]" v-on:click="parseParams(2)" v-on:keyup.enter="parseParams(2)" @change="onInputChange(2)">
         <span>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,0)">&#x27F1;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,1)">&#x2B07;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,2)">&#x2B06;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,3)">&#x27F0;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,0)">&#x27F1;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,1)">&#x2B07;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,2)">&#x2B06;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(2,3)">&#x27F0;</button>
         </span>
         <input v-bind:class="{numInputDark: darkmode, numInputLight: !darkmode }" v-model="paramStrings[3]" v-on:click="parseParams(3)" v-on:keyup.enter="parseParams(3)" @change="onInputChange(3)">
         <span>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,0)">&#x27F1;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,1)">&#x2B07;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,2)">&#x2B06;</button>
-        <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,3)">&#x27F0;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,0)">&#x27F1;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,1)">&#x2B07;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,2)">&#x2B06;</button>
+          <button class="arrow" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="tweakParams(3,3)">&#x27F0;</button>
         </span>
       </div>
     </div>
@@ -480,9 +482,9 @@ export default {
     toggleLightMode() {
       this.darkmode = !this.darkmode;
       if (this.darkmode) {
-        document.body.style.background="black";
+        document.body.style.background = "black";
       } else {
-        document.body.style.background="white";
+        document.body.style.background = "white";
       }
       if (this.darkmode) {
         this.invert(0xFF, 0xFF, 0xFF);
@@ -601,7 +603,7 @@ button.light {
   color: black;
 }
 
-button.arrow.light{
+button.arrow.light {
   display: block;
   color: black;
   float: left;
@@ -614,6 +616,7 @@ button.arrow.light{
   font-size: 14px;
   text-align: center;
 }
+
 button.arrow.dark {
   display: block;
   color: white;
@@ -638,20 +641,24 @@ button.close {
   background-color: Transparent;
 }
 
-input[type=checkbox] {
-  transform: scale(2.0);
-}
-
 canvas {
   display: span;
 }
 
+div.checkdiv {
+  height: 40px
+}
+
 label.labellight {
   color: black;
+  display:inline-block;
+  width: 120px;
 }
 
 label.labeldark {
   color: white;
+  display:inline-block;
+  width: 120px;
 }
 
 input.numInputDark {
@@ -678,9 +685,16 @@ input.numInputLight {
   background-color: Transparent;
 }
 
+input[type=checkbox] {
+  margin-top: 10px;
+}
 span.menu-wrapper {
   position: absolute;
   top: 10px;
   left: 10px;
+}
+.inline{
+    margin-top: 10px;
+    vertical-align:middle;
 }
 </style>
