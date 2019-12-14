@@ -216,7 +216,7 @@ export default {
 
     },
     handleResize() {
-      if (this.$refs['chaos-canvas']) { // Has Vue loaded yet?
+      if (this.$refs['chaos-canvas'] && !this.advancedMode) { // Has Vue loaded yet?
         this.initImageData(window.innerWidth, window.innerHeight);
       }
     },
