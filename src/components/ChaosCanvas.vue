@@ -509,7 +509,7 @@ export default {
     redrawAttractor() {
       this.displayDelay = 0;
       this.startNewAttractor = true;
-      if (this.darkMode) {
+      if (this.darkmode) {
         this.fillImage(0, 0, 0);
       } else {
         this.fillImage(255, 255, 255);
