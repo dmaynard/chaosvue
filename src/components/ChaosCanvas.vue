@@ -87,9 +87,6 @@
 export default {
   data() {
     return {
-      // By creating the provider in the data property, it becomes reactive,
-      // so child components will update when `context` changes.
-
       // This is the CanvasRenderingContext that children will draw to.
       ctx: null,
       image: null,
@@ -97,7 +94,6 @@ export default {
       putImageData: null,
       data: null,
       params: [0.1, 0.2, 0.3, 0.4, 0.1, 0.1],
-
       paramStrings: ["", "", "", "", "", ""],
 
       randomize: true,
@@ -324,6 +320,8 @@ export default {
             this.displayDelay = this.displayDelayDefault;
           }
         }
+      } else {
+        this.nFramesSame = 0;
       }
 
       let percentMaxed = (this.nMaxed * 100 / this.nTouched);
@@ -543,10 +541,8 @@ export default {
       this.$set(this.paramStrings, which, this.params[which].toString())
     },
 
-
     drawProgressBar(progress) {
       let pButton = this.$refs['next'];
-
       if (pButton) { // the button is showing
         if (!this.advancedMode) {
           if (this.displayDelay == 0) {

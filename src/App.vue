@@ -30,13 +30,6 @@ export default {
       darkmode: false
     }
   }
-
-  // Randomly selects a value to randomly increment or decrement every 16 ms.
-  // Not really important, just demonstrates that reactivity still works.
-
-
-
-
 }
 </script>
 
