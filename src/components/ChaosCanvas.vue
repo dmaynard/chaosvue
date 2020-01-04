@@ -433,6 +433,7 @@ export default {
           msElapsed = (new Date().getTime() - startTime);
         }
         if (!init && this.showPaths) {
+          // Add one iteration point per frame to the RingBuffer
           this.ringBuffer.enqueue([px, py]);
           break;
         }
