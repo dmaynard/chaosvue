@@ -24,8 +24,12 @@
         <label class="inline" for="autoPause" v-bind:class="{labeldark: darkmode, labellight: !darkmode }"> Auto Pause</label>
       </div>
       <div class="checkdiv">
-      <input class="inline" type="checkbox" id="advanceMode" background-color="Transparent" v-model="advancedMode">
-      <label class="inline" for="advanceMode" v-bind:class="{labeldark: darkmode, labellight: !darkmode }"> Advanced</label>
+        <input class="inline" type="checkbox" id="showPath" background-color="Transparent" v-model="showPaths">
+        <label class="inline" for="showPath" v-bind:class="{labeldark: darkmode, labellight: !darkmode }"> Show Paths</label>
+      </div>
+      <div class="checkdiv">
+        <input class="inline" type="checkbox" id="advanceMode" background-color="Transparent" v-model="advancedMode">
+        <label class="inline" for="advanceMode" v-bind:class="{labeldark: darkmode, labellight: !darkmode }"> Advanced</label>
       </div>
       <div v-if=advancedMode>
         <button ref="redraw" class="uiButton" id="redrawButton" v-bind:class="{dark: darkmode, light: !darkmode }" v-on:click="redrawAttractor">Clear</button>
@@ -84,6 +88,10 @@
 
 <script>
 /* eslint-disable no-console */
+import {
+  RingBuffer
+} from '../modules/RingBuffer';
+
 export default {
   data() {
     return {
@@ -142,6 +150,7 @@ export default {
       animationRequestID: null,
       aboutUrl: 'https://software-artist.com/chaotic-attractor',
       advancedMode: false,
+      showPaths: false,
       autoPause: false,
       msFrameBudget: 15, // should be less than 16 for 60 fps.
       clearScreen: true,
@@ -151,7 +160,9 @@ export default {
       additiveColors: [" Red", " Green", " Blue"],
       subtractiveColors: [" Cyan", " Magenta", " Yellow"],
       colors: [],
-      tweakAmounts: [0.99, 0.999, 1.001, 1.01]
+      tweakAmounts: [0.99, 0.999, 1.001, 1.01],
+      ringBuffer: null,
+      ringBufferSize: 30
     }
   },
 
@@ -188,6 +199,9 @@ export default {
     this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
     this.dateObject = new Date();
     this.colors = this.darkMode ? this.additaveColors : this.subtractiveColors;
+
+    this.ringBuffer = new RingBuffer(this.ringBufferSize);
+
   },
   methods: {
     initImageData(w, h) {
@@ -243,6 +257,7 @@ export default {
       // console.log(" Ran for " + Math.floor((this.elapsedCPU * 1 / 1000 / 60)) + " minutes " +
       // Math.floor((this.elapsedCPU / 1000 % 60)) + " seconds");
       this.elapsedCPU = 0;
+      this.ringBuffer.reset();
     },
     timeIt(context, f, ...params) {
       let elapsed = -new Date().getTime();
@@ -295,6 +310,9 @@ export default {
         }
         this.ctx.putImageData(this.imageData, 0, 0);
         this.drawProgressBar(this.progress);
+        if (this.showPaths) {
+          this.drawPaths();
+        }
         this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
         return;
       }
@@ -304,7 +322,7 @@ export default {
       this.iterateAttractor(this.startNewAttractor, this.randomize, this.clearScreen);
       this.startNewAttractor = false;
       this.clearScreen = true;
-      if (this.nTouched > 0 && this.nTouched < 500) {
+      if (!this.showPaths && this.nTouched > 0 && this.nTouched < 500) {
         this.startNewAttractor = true;
         this.displayDelay = 0;
       }
@@ -414,12 +432,21 @@ export default {
         if ((loopCount & 0x3F) == 0) {
           msElapsed = (new Date().getTime() - startTime);
         }
+        if (!init && this.showPaths) {
+          // Add one iteration point per frame to the RingBuffer
+          this.ringBuffer.enqueue([px, py]);
+          break;
+        }
       }
       if (init) {
         this.xrange = this.xmax - this.xmin
         this.yrange = this.ymax - this.ymin
       } else {
         this.ctx.putImageData(this.imageData, 0, 0);
+        if (this.showPaths) {
+          this.drawPaths();
+        }
+
       }
 
     },
@@ -540,6 +567,22 @@ export default {
       //this.paramStrings[which] = this.params[which].toString();
       this.$set(this.paramStrings, which, this.params[which].toString())
     },
+    drawPaths() {
+      let p = [0, 0];
+      if (this.ringBuffer.size <= 1) {
+        return;
+      }
+      this.ctx.strokeStyle = 'rgba(0,250,0,1.0)';
+      this.ctx.lineWidth = 1;
+      this.ctx.beginPath();
+      p = this.ringBuffer.peek();
+      this.ctx.moveTo(p[0], p[1]);
+      for (var point of this.ringBuffer) {
+        this.ctx.lineTo(point[0], point[1]);
+      }
+      this.ctx.stroke();
+    },
+
 
     drawProgressBar(progress) {
       let pButton = this.$refs['next'];
@@ -647,13 +690,13 @@ div.checkdiv {
 
 label.labellight {
   color: black;
-  display:inline-block;
+  display: inline-block;
   width: 120px;
 }
 
 label.labeldark {
   color: white;
-  display:inline-block;
+  display: inline-block;
   width: 120px;
 }
 
@@ -684,13 +727,15 @@ input.numInputLight {
 input[type=checkbox] {
   margin-top: 10px;
 }
+
 span.menu-wrapper {
   position: absolute;
   top: 10px;
   left: 10px;
 }
-.inline{
-    margin-top: 10px;
-    vertical-align:middle;
+
+.inline {
+  margin-top: 10px;
+  vertical-align: middle;
 }
 </style>
