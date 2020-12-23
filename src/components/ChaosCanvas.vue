@@ -337,7 +337,7 @@
 <script>
 /* eslint-disable no-console */
 import { RingBuffer } from "../modules/RingBuffer";
-
+const logPerfArraySize = 8; // 2**8 = 256 perfSamples
 export default {
   data() {
     return {
@@ -409,6 +409,8 @@ export default {
       tweakAmounts: [0.99, 0.999, 1.001, 1.01],
       ringBuffer: null,
       ringBufferSize: 30,
+      framePerfs: new Array(2 ** logPerfArraySize),
+      meanItersPerMillisonds: 0,
     };
   },
 
@@ -528,9 +530,9 @@ export default {
       this.ringBuffer.reset();
     },
     timeIt(context, f, ...params) {
-      let elapsed = -new Date().getTime();
+      let elapsed = -performance.now();
       f.call(context, ...params);
-      elapsed += new Date().getTime();
+      elapsed += performance.now();
       window.console.log(f.name + " : " + elapsed + " ms");
       return elapsed;
     },
@@ -567,7 +569,7 @@ export default {
     },
     doAnimation: function() {
       // called every frame
-      const startTime = new Date().getTime();
+      const startTime = performance.now();
       if (this.paused) {
         this.animationRequestID = window.requestAnimationFrame(
           this.doAnimation
@@ -632,7 +634,7 @@ export default {
       }
 
       this.drawProgressBar(this.progress);
-      this.elapsedCPU += new Date().getTime() - startTime;
+      this.elapsedCPU += performance.now() - startTime;
       if (this.elapsedCPU < 0) {
         console.log(" impossible ");
       }
@@ -674,7 +676,7 @@ export default {
       let py = 0;
       // let nx = 0;
       // et ny = 0;
-      let startTime = new Date().getTime();
+      let startTime = performance.now();
       let msElapsed = 0;
       let loopCount = 0;
 
@@ -712,7 +714,7 @@ export default {
           this.doPixel(px, py);
         }
         if ((loopCount & 0x3f) == 0) {
-          msElapsed = new Date().getTime() - startTime;
+          msElapsed = performance.now() - startTime;
         }
         if (!init && this.showPaths) {
           // Add one iteration point per frame to the RingBuffer
@@ -721,6 +723,16 @@ export default {
         }
       }
       // console.log(loopCount + " iters in " + msElapsed + " msec");
+      // record iterations per millisecond
+      // the "&" below is faster than a mod % operation
+      this.framePerfs[this.frames & (2 ** logPerfArraySize - 1)] =
+        loopCount / msElapsed;
+
+      this.meanItersPerMillisonds =
+        this.framePerfs.reduce((a, b) => a + b, 0) / this.framePerfs.length;
+      console.log(
+        " iterations per millisecond: " + this.meanItersPerMillisonds
+      );
       if (init) {
         this.xrange = this.xmax - this.xmin;
         this.yrange = this.ymax - this.ymin;
