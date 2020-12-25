@@ -355,7 +355,6 @@ export default {
       doPixel: null,
       frames: 0,
       iters: 0,
-      itersPerFrame: 9000,
       itersFirstFrame: 1000,
       nTouched: 0,
       nMaxed: 0,
@@ -411,6 +410,7 @@ export default {
       ringBufferSize: 30,
       framePerfs: new Array(2 ** logPerfArraySize),
       meanItersPerMillisonds: 0,
+      attractorStartTime: 0,
     };
   },
 
@@ -504,6 +504,7 @@ export default {
       this.x = 0.1;
       this.y = 0.1;
       this.frames = 0;
+      this.attractorStartTime = performance.now();
       this.iters = 0;
       this.nTouched = 0;
       this.nMaxed = 0;
@@ -569,7 +570,7 @@ export default {
     },
     doAnimation: function() {
       // called every frame
-      const startTime = performance.now();
+      const frameStartTime = performance.now();
       if (this.paused) {
         this.animationRequestID = window.requestAnimationFrame(
           this.doAnimation
@@ -634,10 +635,15 @@ export default {
       }
 
       this.drawProgressBar(this.progress);
-      this.elapsedCPU += performance.now() - startTime;
+      this.elapsedCPU += performance.now() - frameStartTime;
       if (this.elapsedCPU < 0) {
         console.log(" impossible ");
       }
+      this.framesPerSecond = Math.floor(
+        0.5 +
+          (this.frames * 1000) / (performance.now() - this.attractorStartTime)
+      );
+      console.log(" frames per second: " + this.framesPerSecond);
       this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
       return;
     },
@@ -676,7 +682,7 @@ export default {
       let py = 0;
       // let nx = 0;
       // et ny = 0;
-      let startTime = performance.now();
+      let frameStartTime = performance.now();
       let msElapsed = 0;
       let loopCount = 0;
 
@@ -714,7 +720,7 @@ export default {
           this.doPixel(px, py);
         }
         if ((loopCount & 0x3f) == 0) {
-          msElapsed = performance.now() - startTime;
+          msElapsed = performance.now() - frameStartTime;
         }
         if (!init && this.showPaths) {
           // Add one iteration point per frame to the RingBuffer
@@ -730,9 +736,9 @@ export default {
 
       this.meanItersPerMillisonds =
         this.framePerfs.reduce((a, b) => a + b, 0) / this.framePerfs.length;
-      console.log(
-        " iterations per millisecond: " + this.meanItersPerMillisonds
-      );
+      // console.log(
+      //   " iterations per ms: " + Math.floor(this.meanItersPerMillisonds)
+      // );
       if (init) {
         this.xrange = this.xmax - this.xmin;
         this.yrange = this.ymax - this.ymin;
