@@ -1,7 +1,7 @@
 <template>
   <div class="chaos-canvas-wrapper">
     <canvas ref="chaos-canvas" @click="resetAttractor(false)"></canvas>
-    <span class="menu-wrapper" style="width: 140px ">
+    <span class="menu-wrapper" style="width: 150px ">
       <div v-if="menuUp">
         <button
           class="close labeltag"
@@ -113,6 +113,32 @@
           >
         </div>
         <div v-if="advancedMode">
+          <vue-speedometer
+            id="Iterations"
+            :value="meanItersPerMillisonds"
+            :width="150"
+            :height="100"
+            :maxValue="800"
+          />
+          <label
+            align="center"
+            for="Iterations"
+            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
+            >Iterations/ms</label
+          >
+          <vue-speedometer
+            id="Frames"
+            :value="framesPerSecond"
+            :width="150"
+            :height="100"
+            :maxValue="60"
+          />
+          <label
+            align="center"
+            for="Frames"
+            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
+            >Frames/second</label
+          >
           <button
             ref="redraw"
             class="uiButton"
@@ -336,8 +362,9 @@
 
 <script>
 /* eslint-disable no-console */
+import VueSpeedometer from "vue-speedometer";
 import { RingBuffer } from "../modules/RingBuffer";
-
+const logPerfArraySize = 8; // 2**8 = 256 perfSamples
 export default {
   data() {
     return {
@@ -355,7 +382,6 @@ export default {
       doPixel: null,
       frames: 0,
       iters: 0,
-      itersPerFrame: 9000,
       itersFirstFrame: 1000,
       nTouched: 0,
       nMaxed: 0,
@@ -409,6 +435,9 @@ export default {
       tweakAmounts: [0.99, 0.999, 1.001, 1.01],
       ringBuffer: null,
       ringBufferSize: 30,
+      framePerfs: new Array(2 ** logPerfArraySize),
+      meanItersPerMillisonds: 0,
+      attractorStartTime: 0,
     };
   },
 
@@ -502,6 +531,7 @@ export default {
       this.x = 0.1;
       this.y = 0.1;
       this.frames = 0;
+      this.attractorStartTime = performance.now();
       this.iters = 0;
       this.nTouched = 0;
       this.nMaxed = 0;
@@ -528,9 +558,9 @@ export default {
       this.ringBuffer.reset();
     },
     timeIt(context, f, ...params) {
-      let elapsed = -new Date().getTime();
+      let elapsed = -performance.now();
       f.call(context, ...params);
-      elapsed += new Date().getTime();
+      elapsed += performance.now();
       window.console.log(f.name + " : " + elapsed + " ms");
       return elapsed;
     },
@@ -567,7 +597,7 @@ export default {
     },
     doAnimation: function() {
       // called every frame
-      const startTime = new Date().getTime();
+      const frameStartTime = performance.now();
       if (this.paused) {
         this.animationRequestID = window.requestAnimationFrame(
           this.doAnimation
@@ -632,10 +662,15 @@ export default {
       }
 
       this.drawProgressBar(this.progress);
-      this.elapsedCPU += new Date().getTime() - startTime;
+      this.elapsedCPU += performance.now() - frameStartTime;
       if (this.elapsedCPU < 0) {
         console.log(" impossible ");
       }
+      this.framesPerSecond = Math.floor(
+        0.5 +
+          (this.frames * 1000) / (performance.now() - this.attractorStartTime)
+      );
+      // console.log(" frames per second: " + this.framesPerSecond);
       this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
       return;
     },
@@ -674,7 +709,7 @@ export default {
       let py = 0;
       // let nx = 0;
       // et ny = 0;
-      let startTime = new Date().getTime();
+      let frameStartTime = performance.now();
       let msElapsed = 0;
       let loopCount = 0;
 
@@ -712,7 +747,7 @@ export default {
           this.doPixel(px, py);
         }
         if ((loopCount & 0x3f) == 0) {
-          msElapsed = new Date().getTime() - startTime;
+          msElapsed = performance.now() - frameStartTime;
         }
         if (!init && this.showPaths) {
           // Add one iteration point per frame to the RingBuffer
@@ -721,6 +756,17 @@ export default {
         }
       }
       // console.log(loopCount + " iters in " + msElapsed + " msec");
+      // record iterations per millisecond
+      // the "&" below is faster than a mod % operation
+      this.framePerfs[this.frames & (2 ** logPerfArraySize - 1)] =
+        loopCount / msElapsed;
+
+      this.meanItersPerMillisonds = Math.round(
+        this.framePerfs.reduce((a, b) => a + b, 0) / this.framePerfs.length
+      );
+      // console.log(
+      //   " iterations per ms: " + Math.floor(this.meanItersPerMillisonds)
+      // );
       if (init) {
         this.xrange = this.xmax - this.xmin;
         this.yrange = this.ymax - this.ymin;
@@ -930,6 +976,9 @@ export default {
         }
       }
     },
+  },
+  components: {
+    VueSpeedometer,
   },
 };
 </script>
