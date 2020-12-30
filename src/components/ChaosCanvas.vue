@@ -1,7 +1,7 @@
 <template>
   <div class="chaos-canvas-wrapper">
     <canvas ref="chaos-canvas" @click="resetAttractor(false)"></canvas>
-    <span class="menu-wrapper" style="width: 140px ">
+    <span class="menu-wrapper" style="width: 150px ">
       <div v-if="menuUp">
         <button
           class="close labeltag"
@@ -113,6 +113,32 @@
           >
         </div>
         <div v-if="advancedMode">
+          <vue-speedometer
+            id="Iterations"
+            :value="meanItersPerMillisonds"
+            :width="150"
+            :height="100"
+            :maxValue="800"
+          />
+          <label
+            align="center"
+            for="Iterations"
+            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
+            >Iterations/ms</label
+          >
+          <vue-speedometer
+            id="Frames"
+            :value="framesPerSecond"
+            :width="150"
+            :height="100"
+            :maxValue="60"
+          />
+          <label
+            align="center"
+            for="Frames"
+            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
+            >Frames/second</label
+          >
           <button
             ref="redraw"
             class="uiButton"
@@ -336,6 +362,7 @@
 
 <script>
 /* eslint-disable no-console */
+import VueSpeedometer from "vue-speedometer";
 import { RingBuffer } from "../modules/RingBuffer";
 const logPerfArraySize = 8; // 2**8 = 256 perfSamples
 export default {
@@ -643,7 +670,7 @@ export default {
         0.5 +
           (this.frames * 1000) / (performance.now() - this.attractorStartTime)
       );
-      console.log(" frames per second: " + this.framesPerSecond);
+      // console.log(" frames per second: " + this.framesPerSecond);
       this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
       return;
     },
@@ -734,8 +761,9 @@ export default {
       this.framePerfs[this.frames & (2 ** logPerfArraySize - 1)] =
         loopCount / msElapsed;
 
-      this.meanItersPerMillisonds =
-        this.framePerfs.reduce((a, b) => a + b, 0) / this.framePerfs.length;
+      this.meanItersPerMillisonds = Math.round(
+        this.framePerfs.reduce((a, b) => a + b, 0) / this.framePerfs.length
+      );
       // console.log(
       //   " iterations per ms: " + Math.floor(this.meanItersPerMillisonds)
       // );
@@ -948,6 +976,9 @@ export default {
         }
       }
     },
+  },
+  components: {
+    VueSpeedometer,
   },
 };
 </script>
