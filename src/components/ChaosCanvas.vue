@@ -364,6 +364,7 @@
 /* eslint-disable no-console */
 import VueSpeedometer from "vue-speedometer";
 import { RingBuffer } from "../modules/RingBuffer";
+import { AttractorObj } from "../modules/Attractor";
 const logPerfArraySize = 8; // 2**8 = 256 perfSamples
 export default {
   data() {
@@ -434,6 +435,7 @@ export default {
       colors: [],
       tweakAmounts: [0.99, 0.999, 1.001, 1.01],
       ringBuffer: null,
+      att: null,
       ringBufferSize: 30,
       framePerfs: new Array(2 ** logPerfArraySize),
       meanItersPerMillisonds: 0,
@@ -489,6 +491,8 @@ export default {
     this.colors = this.darkMode ? this.additaveColors : this.subtractiveColors;
 
     this.ringBuffer = new RingBuffer(this.ringBufferSize);
+    // The current attractor being drawn
+    this.att = new AttractorObj(true);
   },
   methods: {
     initImageData(w, h) {
@@ -655,8 +659,16 @@ export default {
       if (percentMaxed > this.enoughMaxed && !this.advancedMode) {
         this.startNewAttractor = true;
         this.displayDelay = this.nTouched > 5000 ? this.displayDelayDefault : 0;
-        // console.log(this.nTouched + " touched " + this.nMaxed + " maxed " +
-        //  percentMaxed + " percent " + "  Progress " + this.progress);
+        console.log(
+          this.nTouched +
+            " touched " +
+            this.nMaxed +
+            " maxed " +
+            percentMaxed +
+            " percent " +
+            "  Progress " +
+            this.progress
+        );
 
         console.log(" Enough ");
       }
@@ -708,13 +720,14 @@ export default {
       let px = 0;
       let py = 0;
       // let nx = 0;
-      // et ny = 0;
+      // let ny = 0;
       let frameStartTime = performance.now();
       let msElapsed = 0;
       let loopCount = 0;
 
       if (init) {
         this.initAttractor(randomize);
+        this.att = new AttractorObj(randomize);
         if (clearScreen) {
           this.ctx.fillStyle = this.darkmode
             ? "rgba(0,0,0,1.0)"
@@ -732,9 +745,10 @@ export default {
         // console.log (" x " + x + " y " + y);
         this.iters++;
         loopCount++;
-        [this.x, this.y] = this.iteratePoint(this.x, this.y);
-        // this.x = nx;
-        // this.y = ny;
+        // [this.x, this.y] = this.iteratePoint(this.x, this.y);
+        [this.x, this.y] = this.att.iteratePoint(this.x, this.y);
+        // this.x = this.att.x;
+        // this.y = this.att.y;
         if (init) {
           // first frame we measure range and domain
           if (this.x < this.xmin) this.xmin = this.x;
