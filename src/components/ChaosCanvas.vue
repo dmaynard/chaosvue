@@ -362,6 +362,11 @@
 
 <script>
 /* eslint-disable no-console */
+
+// Todo image data shoud live in Attractor Obj
+// parameters of the attractor should live in the attractor object
+// All drawing should be in the component
+
 import VueSpeedometer from "vue-speedometer";
 import { RingBuffer } from "../modules/RingBuffer";
 import { AttractorObj } from "../modules/Attractor";
@@ -492,7 +497,7 @@ export default {
 
     this.ringBuffer = new RingBuffer(this.ringBufferSize);
     // The current attractor being drawn
-    this.att = new AttractorObj(true);
+    this.att = new AttractorObj(true, this.width, this.height);
   },
   methods: {
     initImageData(w, h) {
@@ -613,6 +618,7 @@ export default {
         if (this.displayDelay == 0 && this.autoPause) {
           this.paused = true;
         }
+        // this.imageData.data.set(this.att.data);
         this.ctx.putImageData(this.imageData, 0, 0);
         this.drawProgressBar(this.progress);
         if (this.showPaths) {
@@ -623,8 +629,8 @@ export default {
         );
         return;
       }
-      this.prevMaxed = this.nMaxed;
-      this.prevTouched = this.nTouched;
+      this.prevMaxed = this.att.nMaxed;
+      this.prevTouched = this.att.nTouched;
 
       this.iterateAttractor(
         this.startNewAttractor,
@@ -633,11 +639,14 @@ export default {
       );
       this.startNewAttractor = false;
       this.clearScreen = true;
-      if (!this.showPaths && this.nTouched > 0 && this.nTouched < 500) {
+      if (!this.showPaths && this.att.nTouched > 0 && this.att.nTouched < 500) {
         this.startNewAttractor = true;
         this.displayDelay = 0;
       }
-      if (this.nTouched == this.prevTouched && this.nMaxed == this.prevMaxed) {
+      if (
+        this.att.nTouched == this.att.prevTouched &&
+        this.att.nMaxed == this.att.prevMaxed
+      ) {
         this.nFramesSame++;
         if (this.nFramesSame > 120) {
           // console.log("no changes for 120 frames, abort or pause this attractor")
@@ -653,24 +662,24 @@ export default {
         this.nFramesSame = 0;
       }
 
-      let percentMaxed = (this.nMaxed * 100) / this.nTouched;
+      let percentMaxed = (this.att.nMaxed * 100) / this.att.nTouched;
       this.progress = Math.min((percentMaxed * 100) / this.enoughMaxed, 100);
       this.drawProgressBar(this.progress);
       if (percentMaxed > this.enoughMaxed && !this.advancedMode) {
         this.startNewAttractor = true;
         this.displayDelay = this.nTouched > 5000 ? this.displayDelayDefault : 0;
-        console.log(
-          this.nTouched +
-            " touched " +
-            this.nMaxed +
-            " maxed " +
-            percentMaxed +
-            " percent " +
-            "  Progress " +
-            this.progress
-        );
+        // console.log(
+        //   this.nTouched +
+        //     " touched " +
+        //     this.nMaxed +
+        //     " maxed " +
+        //     percentMaxed +
+        //     " percent " +
+        //     "  Progress " +
+        //     this.progress
+        // );
 
-        console.log(" Enough ");
+        // console.log(" Enough ");
       }
 
       this.drawProgressBar(this.progress);
@@ -727,7 +736,7 @@ export default {
 
       if (init) {
         this.initAttractor(randomize);
-        this.att = new AttractorObj(randomize);
+        this.att = new AttractorObj(randomize, this.width, this.height);
         if (clearScreen) {
           this.ctx.fillStyle = this.darkmode
             ? "rgba(0,0,0,1.0)"
@@ -746,20 +755,14 @@ export default {
         this.iters++;
         loopCount++;
         // [this.x, this.y] = this.iteratePoint(this.x, this.y);
-        [this.x, this.y] = this.att.iteratePoint(this.x, this.y);
+        [this.x, this.y] = this.att.iteratePoint(this.x, this.y, init);
         // this.x = this.att.x;
         // this.y = this.att.y;
-        if (init) {
-          // first frame we measure range and domain
-          if (this.x < this.xmin) this.xmin = this.x;
-          if (this.x > this.xmax) this.xmax = this.x;
-          if (this.y < this.ymin) this.ymin = this.y;
-          if (this.y > this.ymax) this.ymax = this.y;
-        } else {
-          px = this.pixelx(this.x);
-          py = this.pixely(this.y);
-          this.doPixel(px, py);
-        }
+        // if (!init) {
+        //   px = this.att.pixelx(this.x);
+        //   py = this.att.pixely(this.y);
+        //   this.doPixel(px, py);
+        // }
         if ((loopCount & 0x3f) == 0) {
           msElapsed = performance.now() - frameStartTime;
         }
@@ -785,79 +788,83 @@ export default {
         this.xrange = this.xmax - this.xmin;
         this.yrange = this.ymax - this.ymin;
       } else {
+        //  copy the image data from the module's memory
+
+        this.imageData.data.set(this.att.data);
         this.ctx.putImageData(this.imageData, 0, 0);
+
         if (this.showPaths) {
           this.drawPaths();
         }
       }
     },
-    pixelx(x) {
-      let px =
-        Math.floor(
-          ((x - this.xmin) / this.xrange) * (this.width - 2 * this.margin)
-        ) + this.margin;
-      // if ((px < 0) || (px > this.width)) console.log(" bad x " + px + " " + x);
-      px = px < 0 ? 0 : px;
-      px = px > this.width - 1 ? this.width - 1 : px;
-      return px;
-    },
-    pixely(y) {
-      let py =
-        Math.floor(
-          ((y - this.ymin) / this.yrange) * (this.height - 2 * this.margin)
-        ) + this.margin;
-      // if ((py < 0) || (py > this.height)) console.log(" bad y " + py + " " + y);
-      py = py < 0 ? 0 : py;
-      py = py > this.height - 1 ? this.height - 1 : py;
-      return py;
-    },
-    incPixel(x, y) {
-      let i = (y * this.width + x) * 4;
-      if (this.data[i] == 0 && this.data[i + 1] == 0 && this.data[i + 2] == 0) {
-        this.nTouched++;
-      }
-      if (
-        this.data[i] == 254 ||
-        this.data[i + 1] == 254 ||
-        this.data[i + 2] == 254
-      ) {
-        this.nMaxed++;
-      }
-      if (this.data[i] < 255) {
-        this.data[i] += this.red ? 1 : 0;
-        this.data[i + 1] += this.green ? 1 : 0;
-        this.data[i + 2] += this.blue ? 1 : 0;
-      }
-      // this.data[i + 3] = 255;
-    },
-    decPixel(x, y) {
-      let i = (y * this.width + x) * 4;
-      if (
-        this.data[i] == 255 &&
-        this.data[i + 1] == 255 &&
-        this.data[i + 2] == 255
-      ) {
-        this.nTouched++;
-      }
-      if (this.data[i] == 1 || this.data[i + 1] == 1 || this.data[i + 2] == 1) {
-        this.nMaxed++;
-      }
-      if (this.data[i] > 0) {
-        this.data[i] += this.red ? -1 : 0;
-        this.data[i + 1] += this.green ? -1 : 0;
-        this.data[i + 2] += this.blue ? -1 : 0;
-      }
-      // this.data[i + 3] = 255;
-    },
-    testPixel(x, y) {
-      let i = (y * this.width + x) * 4;
-      if (this.data[i] !== this.data[i + 1]) {
-        console.log(" not grayscale " + this.data[i] + this.data[i + 1]);
-      }
-      if (this.data[i + 1] !== this.data[i + 2]) {
-        console.log(" not grayscale " + this.data[i] + this.data[i + 1]);
-      }
-    },
+    // pixelx(x) {
+    //   let px =
+    //     Math.floor(
+    //       ((x - this.xmin) / this.xrange) * (this.width - 2 * this.margin)
+    //     ) + this.margin;
+    //   // if ((px < 0) || (px > this.width)) console.log(" bad x " + px + " " + x);
+    //   px = px < 0 ? 0 : px;
+    //   px = px > this.width - 1 ? this.width - 1 : px;
+    //   return px;
+    // },
+    // pixely(y) {
+    //   let py =
+    //     Math.floor(
+    //       ((y - this.ymin) / this.yrange) * (this.height - 2 * this.margin)
+    //     ) + this.margin;
+    //   // if ((py < 0) || (py > this.height)) console.log(" bad y " + py + " " + y);
+    //   py = py < 0 ? 0 : py;
+    //   py = py > this.height - 1 ? this.height - 1 : py;
+    //   return py;
+    // },
+    // incPixel(x, y) {
+    //   let i = (y * this.width + x) * 4;
+    //   if (this.data[i] == 0 && this.data[i + 1] == 0 && this.data[i + 2] == 0) {
+    //     this.nTouched++;
+    //   }
+    //   if (
+    //     this.data[i] == 254 ||
+    //     this.data[i + 1] == 254 ||
+    //     this.data[i + 2] == 254
+    //   ) {
+    //     this.nMaxed++;
+    //   }
+    //   if (this.data[i] < 255) {
+    //     this.data[i] += this.red ? 1 : 0;
+    //     this.data[i + 1] += this.green ? 1 : 0;
+    //     this.data[i + 2] += this.blue ? 1 : 0;
+    //   }
+    //   // this.data[i + 3] = 255;
+    // },
+    // decPixel(x, y) {
+    //   let i = (y * this.width + x) * 4;
+    //   if (
+    //     this.data[i] == 255 &&
+    //     this.data[i + 1] == 255 &&
+    //     this.data[i + 2] == 255
+    //   ) {
+    //     this.nTouched++;
+    //   }
+    //   if (this.data[i] == 1 || this.data[i + 1] == 1 || this.data[i + 2] == 1) {
+    //     this.nMaxed++;
+    //   }
+    //   if (this.data[i] > 0) {
+    //     this.data[i] += this.red ? -1 : 0;
+    //     this.data[i + 1] += this.green ? -1 : 0;
+    //     this.data[i + 2] += this.blue ? -1 : 0;
+    //   }
+    //   // this.data[i + 3] = 255;
+    // },
+    // testPixel(x, y) {
+    //   let i = (y * this.width + x) * 4;
+    //   if (this.data[i] !== this.data[i + 1]) {
+    //     console.log(" not grayscale " + this.data[i] + this.data[i + 1]);
+    //   }
+    //   if (this.data[i + 1] !== this.data[i + 2]) {
+    //     console.log(" not grayscale " + this.data[i] + this.data[i + 1]);
+    //   }
+    // },
 
     toggleLightMode() {
       this.darkmode = !this.darkmode;
