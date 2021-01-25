@@ -385,20 +385,20 @@ export default {
 
       randomize: true,
       darkmode: false,
-      doPixel: null,
+      // doPixel: null,
       frames: 0,
       iters: 0,
       itersFirstFrame: 1000,
-      nTouched: 0,
-      nMaxed: 0,
+      // nTouched: 0,
+      // nMaxed: 0,
       paused: false,
-      xmin: 100,
-      xmax: -100,
-      ymin: 100,
-      ymax: -100,
-      xrange: 1.0,
-      yrange: 1.0,
-      margin: 20,
+      // xmin: 100,
+      // xmax: -100,
+      // ymin: 100,
+      // ymax: -100,
+      // xrange: 1.0,
+      // yrange: 1.0,
+      // margin: 20,
       startNewAttractor: true,
       displayDelayDefault: 600,
       displayDelay: 0,
@@ -534,6 +534,12 @@ export default {
       if (this.$refs["chaos-canvas"] && !this.advancedMode) {
         // Has Vue loaded yet?
         this.initImageData(window.innerWidth, window.innerHeight);
+        this.att = new AttractorObj(
+          false,
+          window.innerWidth,
+          window.innerHeight,
+          this.darkmode
+        );
       }
     },
     initAttractor(randomize) {
@@ -574,26 +580,26 @@ export default {
       return elapsed;
     },
     invert(r, g, b) {
-      for (var i = 0; i < this.data.length; i += 4) {
-        this.data[i] ^= r; // red
-        this.data[i + 1] ^= g; // green
-        this.data[i + 2] ^= b; // blue
+      for (var i = 0; i < this.att.data.length; i += 4) {
+        this.att.data[i] ^= r; // red
+        this.att.data[i + 1] ^= g; // green
+        this.att.data[i + 2] ^= b; // blue
       }
     },
     zeroImage() {
-      for (var i = 0; i < this.data.length; i += 4) {
-        this.data[i] = 0; // red
-        this.data[i + 1] = 0; // green
-        this.data[i + 2] = 0; // blue
-        this.data[i + 3] = 255; // opaque
+      for (var i = 0; i < this.att.data.length; i += 4) {
+        this.att.data[i] = 0; // red
+        this.att.data[i + 1] = 0; // green
+        this.att.data[i + 2] = 0; // blue
+        this.att.data[i + 3] = 255; // opaque
       }
     },
     fillImage(r, g, b) {
-      for (var i = 0; i < this.data.length; i += 4) {
-        this.data[i] = r; // red
-        this.data[i + 1] = g; // green
-        this.data[i + 2] = b; // blue
-        this.data[i + 3] = 255; // opaque
+      for (var i = 0; i < this.att.data.length; i += 4) {
+        this.att.data[i] = r; // red
+        this.att.data[i + 1] = g; // green
+        this.att.data[i + 2] = b; // blue
+        this.att.data[i + 3] = 255; // opaque
       }
     },
     clickMethod() {
@@ -618,8 +624,6 @@ export default {
         if (this.displayDelay == 0 && this.autoPause) {
           this.paused = true;
         }
-        // this.imageData.data.set(this.att.data);
-        this.ctx.putImageData(this.imageData, 0, 0);
         this.drawProgressBar(this.progress);
         if (this.showPaths) {
           this.drawPaths();
@@ -798,73 +802,6 @@ export default {
         }
       }
     },
-    // pixelx(x) {
-    //   let px =
-    //     Math.floor(
-    //       ((x - this.xmin) / this.xrange) * (this.width - 2 * this.margin)
-    //     ) + this.margin;
-    //   // if ((px < 0) || (px > this.width)) console.log(" bad x " + px + " " + x);
-    //   px = px < 0 ? 0 : px;
-    //   px = px > this.width - 1 ? this.width - 1 : px;
-    //   return px;
-    // },
-    // pixely(y) {
-    //   let py =
-    //     Math.floor(
-    //       ((y - this.ymin) / this.yrange) * (this.height - 2 * this.margin)
-    //     ) + this.margin;
-    //   // if ((py < 0) || (py > this.height)) console.log(" bad y " + py + " " + y);
-    //   py = py < 0 ? 0 : py;
-    //   py = py > this.height - 1 ? this.height - 1 : py;
-    //   return py;
-    // },
-    // incPixel(x, y) {
-    //   let i = (y * this.width + x) * 4;
-    //   if (this.data[i] == 0 && this.data[i + 1] == 0 && this.data[i + 2] == 0) {
-    //     this.nTouched++;
-    //   }
-    //   if (
-    //     this.data[i] == 254 ||
-    //     this.data[i + 1] == 254 ||
-    //     this.data[i + 2] == 254
-    //   ) {
-    //     this.nMaxed++;
-    //   }
-    //   if (this.data[i] < 255) {
-    //     this.data[i] += this.red ? 1 : 0;
-    //     this.data[i + 1] += this.green ? 1 : 0;
-    //     this.data[i + 2] += this.blue ? 1 : 0;
-    //   }
-    //   // this.data[i + 3] = 255;
-    // },
-    // decPixel(x, y) {
-    //   let i = (y * this.width + x) * 4;
-    //   if (
-    //     this.data[i] == 255 &&
-    //     this.data[i + 1] == 255 &&
-    //     this.data[i + 2] == 255
-    //   ) {
-    //     this.nTouched++;
-    //   }
-    //   if (this.data[i] == 1 || this.data[i + 1] == 1 || this.data[i + 2] == 1) {
-    //     this.nMaxed++;
-    //   }
-    //   if (this.data[i] > 0) {
-    //     this.data[i] += this.red ? -1 : 0;
-    //     this.data[i + 1] += this.green ? -1 : 0;
-    //     this.data[i + 2] += this.blue ? -1 : 0;
-    //   }
-    //   // this.data[i + 3] = 255;
-    // },
-    // testPixel(x, y) {
-    //   let i = (y * this.width + x) * 4;
-    //   if (this.data[i] !== this.data[i + 1]) {
-    //     console.log(" not grayscale " + this.data[i] + this.data[i + 1]);
-    //   }
-    //   if (this.data[i + 1] !== this.data[i + 2]) {
-    //     console.log(" not grayscale " + this.data[i] + this.data[i + 1]);
-    //   }
-    // },
 
     toggleLightMode() {
       this.darkmode = !this.darkmode;
@@ -873,15 +810,9 @@ export default {
       } else {
         document.body.style.background = "white";
       }
-      if (this.darkmode) {
-        this.invert(0xff, 0xff, 0xff);
-        this.doPixel = this.incPixel;
-        this.colors = this.additiveColors;
-      } else {
-        this.invert(0xff, 0xff, 0xff);
-        this.doPixel = this.decPixel;
-        this.colors = this.subtractiveColors;
-      }
+      this.invert(0xff, 0xff, 0xff);
+      this.att.darkmode = this.darkmode;
+      this.imageData.data.set(this.att.data);
       this.ctx.putImageData(this.imageData, 0, 0);
     },
     toggleMenuUp() {
