@@ -1,4 +1,4 @@
-<template>
+ª<template>
   <div class="chaos-canvas-wrapper">
     <canvas ref="chaos-canvas" @click="resetAttractor(false)"></canvas>
     <span class="menu-wrapper" style="width: 150px ">
@@ -40,62 +40,6 @@
           Next
         </button>
 
-        <div v-if="darkmode">
-          <button
-            class="uiButton"
-            v-bind:class="{ dark: darkmode, light: !darkmode }"
-            v-on:click="toggleLightMode"
-          >
-            &#x2600;
-          </button>
-        </div>
-        <div v-else>
-          <button
-            class="uiButton"
-            v-bind:class="{ dark: darkmode, light: !darkmode }"
-            v-on:click="toggleLightMode"
-          >
-            &#x263E;
-          </button>
-        </div>
-        <button
-          class="uiButton"
-          v-bind:class="{ dark: darkmode, light: !darkmode }"
-          v-on:click="doAbout"
-        >
-          About
-        </button>
-        <div class="checkdiv">
-          <input
-            class="inline"
-            type="checkbox"
-            id="autoPause"
-            v-model="autoPause"
-          />
-          <label
-            class="inline"
-            for="autoPause"
-            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
-          >
-            Auto Pause</label
-          >
-        </div>
-        <div class="checkdiv">
-          <input
-            class="inline"
-            type="checkbox"
-            id="showPath"
-            background-color="Transparent"
-            v-model="showPaths"
-          />
-          <label
-            class="inline"
-            for="showPath"
-            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
-          >
-            Show Paths</label
-          >
-        </div>
         <div class="checkdiv">
           <input
             class="inline"
@@ -140,221 +84,33 @@
             >Frames/second</label
           >
           <button
-            ref="redraw"
             class="uiButton"
-            id="redrawButton"
             v-bind:class="{ dark: darkmode, light: !darkmode }"
-            v-on:click="redrawAttractor"
+            v-on:click="doAbout"
           >
-            Clear
+            About
           </button>
-          <div class="checkdiv">
-            <input
-              class="inline"
-              type="checkbox"
-              id="redcheck"
-              background-color="Transparent"
-              v-model="red"
-            />
-            <label
-              class="inline"
-              for="redcheck"
-              v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
-              >{{ colors[0] }}</label
-            >
-          </div>
-          <div class="checkdiv">
-            <input
-              class="inline"
-              type="checkbox"
-              background-color="Transparent"
-              id="greencheckbox"
-              v-model="green"
-            />
-            <label
-              class="inline"
-              for="greencheckbox"
-              v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
-              >{{ colors[1] }}</label
-            >
-          </div>
-          <div class="checkdiv">
-            <input
-              class="inline"
-              type="checkbox"
-              background-color="Transparent"
-              id="bluecheckbox"
-              v-model="blue"
-            />
-            <label
-              class="inline"
-              for="bluecheckbox"
-              v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
-              >{{ colors[2] }}</label
-            >
-          </div>
-
-          <input
-            v-bind:class="{ numInputDark: darkmode, numInputLight: !darkmode }"
-            v-model="paramStrings[0]"
-            v-on:click="parseParams(0)"
-            v-on:keyup.enter="parseParams(0)"
-            @change="onInputChange(0)"
-          />
-          <span>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(0, 0)"
-            >
-              &#x27F1;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(0, 1)"
-            >
-              &#x2B07;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(0, 2)"
-            >
-              &#x2B06;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(0, 3)"
-            >
-              &#x27F0;
-            </button>
-          </span>
-
-          <input
-            v-bind:class="{ numInputDark: darkmode, numInputLight: !darkmode }"
-            v-model="paramStrings[1]"
-            v-on:click="parseParams(1)"
-            v-on:keyup.enter="parseParams(1)"
-            @change="onInputChange(1)"
-          />
-          <span>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(1, 0)"
-            >
-              &#x27F1;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(1, 1)"
-            >
-              &#x2B07;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(1, 2)"
-            >
-              &#x2B06;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(1, 3)"
-            >
-              &#x27F0;
-            </button>
-          </span>
-
-          <input
-            v-bind:class="{ numInputDark: darkmode, numInputLight: !darkmode }"
-            v-model="paramStrings[2]"
-            v-on:click="parseParams(2)"
-            v-on:keyup.enter="parseParams(2)"
-            @change="onInputChange(2)"
-          />
-          <span>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(2, 0)"
-            >
-              &#x27F1;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(2, 1)"
-            >
-              &#x2B07;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(2, 2)"
-            >
-              &#x2B06;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(2, 3)"
-            >
-              &#x27F0;
-            </button>
-          </span>
-          <input
-            v-bind:class="{ numInputDark: darkmode, numInputLight: !darkmode }"
-            v-model="paramStrings[3]"
-            v-on:click="parseParams(3)"
-            v-on:keyup.enter="parseParams(3)"
-            @change="onInputChange(3)"
-          />
-          <span>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(3, 0)"
-            >
-              &#x27F1;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(3, 1)"
-            >
-              &#x2B07;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(3, 2)"
-            >
-              &#x2B06;
-            </button>
-            <button
-              class="arrow"
-              v-bind:class="{ dark: darkmode, light: !darkmode }"
-              v-on:click="tweakParams(3, 3)"
-            >
-              &#x27F0;
-            </button>
-          </span>
         </div>
       </div>
       <div v-else>
-        <button
-          style="float: left"
-          class="close labeltag"
-          v-bind:class="{ dark: darkmode, light: !darkmode }"
-          v-on:click="toggleMenuUp"
-        >
-          &#9776;
-        </button>
+        <span>
+          <button
+            style="float: left"
+            class="close labeltag"
+            v-bind:class="{ dark: darkmode, light: !darkmode }"
+            v-on:click="toggleMenuUp"
+          >
+            &#9776;
+          </button>
+          <button
+            style="float: left"
+            class="close labeltag"
+            v-bind:class="{ dark: darkmode, light: !darkmode }"
+            v-on:click="resetAttractor(true)"
+          >
+            &#8594;
+          </button>
+        </span>
       </div>
     </span>
   </div>
@@ -363,12 +119,10 @@
 <script>
 /* eslint-disable no-console */
 
-// Todo image data shoud live in Attractor Obj
-// parameters of the attractor should live in the attractor object
-// All drawing should be in the component
+// Todo eliminate extraneous UI and functions
 
 import VueSpeedometer from "vue-speedometer";
-import { RingBuffer } from "../modules/RingBuffer";
+// import { RingBuffer } from "../modules/RingBuffer";
 import { AttractorObj } from "../modules/Attractor";
 const logPerfArraySize = 8; // 2**8 = 256 perfSamples
 export default {
@@ -380,25 +134,12 @@ export default {
       imageData: null,
       putImageData: null,
       data: null,
-      params: [0.1, 0.2, 0.3, 0.4, 0.1, 0.1],
-      paramStrings: ["", "", "", "", "", ""],
-
       randomize: true,
       darkmode: false,
-      // doPixel: null,
       frames: 0,
       iters: 0,
       itersFirstFrame: 1000,
-      // nTouched: 0,
-      // nMaxed: 0,
       paused: false,
-      // xmin: 100,
-      // xmax: -100,
-      // ymin: 100,
-      // ymax: -100,
-      // xrange: 1.0,
-      // yrange: 1.0,
-      // margin: 20,
       startNewAttractor: true,
       displayDelayDefault: 600,
       displayDelay: 0,
@@ -428,20 +169,17 @@ export default {
       animationRequestID: null,
       aboutUrl: "https://software-artist.com/chaotic-attractor",
       advancedMode: false,
-      showPaths: false,
       autoPause: false,
       msFrameBudget: 15, // should be less than 16 for 60 fps.
       clearScreen: true,
       red: true,
       green: true,
       blue: true,
-      additiveColors: [" Red", " Green", " Blue"],
-      subtractiveColors: [" Cyan", " Magenta", " Yellow"],
       colors: [],
-      tweakAmounts: [0.99, 0.999, 1.001, 1.01],
-      ringBuffer: null,
+      // tweakAmounts: [0.99, 0.999, 1.001, 1.01],
+      // ringBuffer: null,
       att: null,
-      ringBufferSize: 30,
+      // ringBufferSize: 30,
       framePerfs: new Array(2 ** logPerfArraySize),
       meanItersPerMillisonds: 0,
       attractorStartTime: 0,
@@ -495,7 +233,7 @@ export default {
     this.dateObject = new Date();
     this.colors = this.darkMode ? this.additaveColors : this.subtractiveColors;
 
-    this.ringBuffer = new RingBuffer(this.ringBufferSize);
+    // this.ringBuffer = new RingBuffer(this.ringBufferSize);
     // The current attractor being drawn
     this.att = new AttractorObj(true, this.width, this.height);
   },
@@ -523,11 +261,9 @@ export default {
       );
       this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
       this.data = this.imageData.data;
-      if (this.darkmode) {
-        this.zeroImage();
-      } else {
-        this.fillImage(0xff, 0xff, 0xff);
-      }
+
+      this.fillImage(0xff, 0xff, 0xff);
+
       this.ctx.putImageData(this.imageData, 0, 0);
     },
     handleResize() {
@@ -537,40 +273,15 @@ export default {
         this.att = new AttractorObj(
           false,
           window.innerWidth,
-          window.innerHeight,
-          this.darkmode
+          window.innerHeight
         );
       }
     },
-    initAttractor(randomize) {
+    initAttractor() {
       this.x = 0.1;
       this.y = 0.1;
       this.frames = 0;
-      this.attractorStartTime = performance.now();
-      this.iters = 0;
-      this.nTouched = 0;
-      this.nMaxed = 0;
       this.state = "running";
-      if (randomize) {
-        this.params[0] = 3.0 * (Math.random() * 2.0 - 1.0);
-        this.params[1] = 3.0 * (Math.random() * 2.0 - 1.0);
-        this.params[2] = Math.random() * 2.0 - 1.0 + 0.5;
-        this.params[3] = Math.random() * 2.0 - 1.0 + 0.5;
-      }
-      this.paramStrings[0] = this.params[0].toString();
-      this.paramStrings[1] = this.params[1].toString();
-      this.paramStrings[2] = this.params[2].toString();
-      this.paramStrings[3] = this.params[3].toString();
-      this.xmax = -100.0;
-      this.xmin = 100.0;
-      this.ymax = -100.0;
-      this.ymin = 100.0;
-      this.nFramesSame = 0;
-      this.progress = 0;
-      // console.log(" Ran for " + Math.floor((this.elapsedCPU * 1 / 1000 / 60)) + " minutes " +
-      // Math.floor((this.elapsedCPU / 1000 % 60)) + " seconds");
-      this.elapsedCPU = 0;
-      this.ringBuffer.reset();
     },
     timeIt(context, f, ...params) {
       let elapsed = -performance.now();
@@ -625,9 +336,7 @@ export default {
           this.paused = true;
         }
         this.drawProgressBar(this.progress);
-        if (this.showPaths) {
-          this.drawPaths();
-        }
+
         this.animationRequestID = window.requestAnimationFrame(
           this.doAnimation
         );
@@ -643,7 +352,7 @@ export default {
       );
       this.startNewAttractor = false;
       this.clearScreen = true;
-      if (!this.showPaths && this.att.nTouched > 0 && this.att.nTouched < 500) {
+      if (this.att.nTouched > 0 && this.att.nTouched < 500) {
         this.startNewAttractor = true;
         this.displayDelay = 0;
       }
@@ -671,7 +380,8 @@ export default {
       this.drawProgressBar(this.progress);
       if (percentMaxed > this.enoughMaxed && !this.advancedMode) {
         this.startNewAttractor = true;
-        this.displayDelay = this.nTouched > 5000 ? this.displayDelayDefault : 0;
+        this.displayDelay =
+          this.att.nTouched > 5000 ? this.displayDelayDefault : 0;
         // console.log(
         //   this.nTouched +
         //     " touched " +
@@ -693,7 +403,8 @@ export default {
       }
       this.framesPerSecond = Math.floor(
         0.5 +
-          (this.frames * 1000) / (performance.now() - this.attractorStartTime)
+          (this.frames * 1000) /
+            (performance.now() - this.att.attractorStartTime)
       );
       // console.log(" frames per second: " + this.framesPerSecond);
       this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
@@ -719,19 +430,17 @@ export default {
       this.randomize = true;
       this.clearScreen = true;
     },
-    iteratePoint: function(x, y) {
-      let nx =
-        Math.sin(y * this.params[1]) -
-        this.params[2] * Math.sin(x * this.params[1]);
-      let ny =
-        Math.sin(x * this.params[0]) +
-        this.params[3] * Math.cos(y * this.params[0]);
-      return [nx, ny];
-    },
+    // iteratePoint: function(x, y) {
+    //   let nx =
+    //     Math.sin(y * this.params[1]) -
+    //     this.params[2] * Math.sin(x * this.params[1]);
+    //   let ny =
+    //     Math.sin(x * this.params[0]) +
+    //     this.params[3] * Math.cos(y * this.params[0]);
+    //   return [nx, ny];
+    // },
 
     iterateAttractor(init, randomize, clearScreen) {
-      let px = 0;
-      let py = 0;
       // let nx = 0;
       // let ny = 0;
       let frameStartTime = performance.now();
@@ -742,9 +451,7 @@ export default {
         this.initAttractor(randomize);
         this.att = new AttractorObj(randomize, this.width, this.height);
         if (clearScreen) {
-          this.ctx.fillStyle = this.darkmode
-            ? "rgba(0,0,0,1.0)"
-            : "rgba(255,255,255,1.0)";
+          this.ctx.fillStyle = "rgba(255,255,255,1.0)";
           this.ctx.fillRect(0, 0, this.width, this.height);
           this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
           this.data = this.imageData.data;
@@ -770,11 +477,6 @@ export default {
         if ((loopCount & 0x3f) == 0) {
           msElapsed = performance.now() - frameStartTime;
         }
-        if (!init && this.showPaths) {
-          // Add one iteration point per frame to the RingBuffer
-          this.ringBuffer.enqueue([px, py]);
-          break;
-        }
       }
       // console.log(loopCount + " iters in " + msElapsed + " msec");
       // record iterations per millisecond
@@ -796,10 +498,6 @@ export default {
 
         this.imageData.data.set(this.att.data);
         this.ctx.putImageData(this.imageData, 0, 0);
-
-        if (this.showPaths) {
-          this.drawPaths();
-        }
       }
     },
 
@@ -817,22 +515,12 @@ export default {
     },
     toggleMenuUp() {
       this.menuUp = !this.menuUp;
+      this.imageData.data.set(this.att.data);
       this.ctx.putImageData(this.imageData, 0, 0);
     },
     drawAttractor() {
       this.displayDelay = 0;
       this.clearScreen = false;
-      this.randomize = false;
-    },
-    redrawAttractor() {
-      this.displayDelay = 0;
-      this.startNewAttractor = true;
-      if (this.darkmode) {
-        this.fillImage(0, 0, 0);
-      } else {
-        this.fillImage(255, 255, 255);
-      }
-      this.ctx.putImageData(this.imageData, 0, 0);
       this.randomize = false;
     },
     doAbout() {
@@ -854,27 +542,27 @@ export default {
       console.log(" onInputChange " + which + " " + this.params[which]);
     },
 
-    tweakParams(which, howMuch) {
-      // console.log(" param " + which + " " + this.params[which])
-      this.params[which] = this.params[which] * this.tweakAmounts[howMuch];
-      //this.paramStrings[which] = this.params[which].toString();
-      this.$set(this.paramStrings, which, this.params[which].toString());
-    },
-    drawPaths() {
-      let p = [0, 0];
-      if (this.ringBuffer.size <= 1) {
-        return;
-      }
-      this.ctx.strokeStyle = "rgba(0,250,0,1.0)";
-      this.ctx.lineWidth = 1;
-      this.ctx.beginPath();
-      p = this.ringBuffer.peek();
-      this.ctx.moveTo(p[0], p[1]);
-      for (var point of this.ringBuffer) {
-        this.ctx.lineTo(point[0], point[1]);
-      }
-      this.ctx.stroke();
-    },
+    // tweakParams(which, howMuch) {
+    //   // console.log(" param " + which + " " + this.params[which])
+    //   this.params[which] = this.params[which] * this.tweakAmounts[howMuch];
+    //   //this.paramStrings[which] = this.params[which].toString();
+    //   this.$set(this.paramStrings, which, this.params[which].toString());
+    // },
+    // drawPaths() {
+    //   let p = [0, 0];
+    //   if (this.ringBuffer.size <= 1) {
+    //     return;
+    //   }
+    //   this.ctx.strokeStyle = "rgba(0,250,0,1.0)";
+    //   this.ctx.lineWidth = 1;
+    //   this.ctx.beginPath();
+    //   p = this.ringBuffer.peek();
+    //   this.ctx.moveTo(p[0], p[1]);
+    //   for (var point of this.ringBuffer) {
+    //     this.ctx.lineTo(point[0], point[1]);
+    //   }
+    //   this.ctx.stroke();
+    // },
 
     drawProgressBar(progress) {
       let pButton = this.$refs["next"];

@@ -7,7 +7,6 @@ export class AttractorObj {
     this.height = height;
     this.frames = 0;
     this.attractorStartTime = performance.now();
-    this.iters = 0;
     this.nTouched = 0;
     this.nMaxed = 0;
     this.red = true;
