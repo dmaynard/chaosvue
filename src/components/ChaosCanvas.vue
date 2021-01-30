@@ -3,20 +3,11 @@
     <canvas ref="chaos-canvas" @click="resetAttractor(false)"></canvas>
     <span class="menu-wrapper" style="width: 150px ">
       <div v-if="menuUp">
-        <button
-          class="close labeltag"
-          v-bind:class="{ dark: darkmode, light: !darkmode }"
-          v-on:click="toggleMenuUp"
-        >
+        <button class="close labeltag" v-on:click="toggleMenuUp">
           X
         </button>
         <div v-if="paused">
-          <button
-            ref="resume"
-            class="uiButton"
-            v-bind:class="{ dark: darkmode, light: !darkmode }"
-            v-on:click="startAnimation"
-          >
+          <button ref="resume" class="uiButton" v-on:click="startAnimation">
             Resume
           </button>
         </div>
@@ -25,18 +16,12 @@
             ref="pause"
             class="uiButton"
             id="pauseButton"
-            v-bind:class="{ dark: darkmode, light: !darkmode }"
             v-on:click="pauseAnimation"
           >
             Pause
           </button>
         </div>
-        <button
-          ref="next"
-          class="uiButton"
-          v-bind:class="{ dark: darkmode, light: !darkmode }"
-          v-on:click="resetAttractor(true)"
-        >
+        <button ref="next" class="uiButton" v-on:click="resetAttractor(true)">
           Next
         </button>
 
@@ -48,13 +33,7 @@
             background-color="Transparent"
             v-model="advancedMode"
           />
-          <label
-            class="inline"
-            for="advanceMode"
-            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
-          >
-            Advanced</label
-          >
+          <label class="inline" for="advanceMode"> Show Speed</label>
         </div>
         <div v-if="advancedMode">
           <vue-speedometer
@@ -62,14 +41,9 @@
             :value="meanItersPerMillisonds"
             :width="150"
             :height="100"
-            :maxValue="800"
+            :maxValue="1500"
           />
-          <label
-            align="center"
-            for="Iterations"
-            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
-            >Iterations/ms</label
-          >
+          <label align="center" for="Iterations">Iterations/ms</label>
           <vue-speedometer
             id="Frames"
             :value="framesPerSecond"
@@ -77,18 +51,12 @@
             :height="100"
             :maxValue="60"
           />
-          <label
-            align="center"
-            for="Frames"
-            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
-            >Frames/second</label
-          >
-          <button
-            class="uiButton"
-            v-bind:class="{ dark: darkmode, light: !darkmode }"
-            v-on:click="doAbout"
-          >
+          <label align="center" for="Frames">Frames/second</label>
+          <button class="uiButton" v-on:click="doAbout">
             About
+          </button>
+          <button class="uiButton" v-on:click="doTestAttractor">
+            Test
           </button>
         </div>
       </div>
@@ -97,18 +65,9 @@
           <button
             style="float: left"
             class="close labeltag"
-            v-bind:class="{ dark: darkmode, light: !darkmode }"
             v-on:click="toggleMenuUp"
           >
             &#9776;
-          </button>
-          <button
-            style="float: left"
-            class="close labeltag"
-            v-bind:class="{ dark: darkmode, light: !darkmode }"
-            v-on:click="resetAttractor(true)"
-          >
-            &#8594;
           </button>
         </span>
       </div>
@@ -124,7 +83,7 @@
 import VueSpeedometer from "vue-speedometer";
 // import { RingBuffer } from "../modules/RingBuffer";
 import { AttractorObj } from "../modules/Attractor";
-const logPerfArraySize = 8; // 2**8 = 256 perfSamples
+const logPerfArraySize = 6; // 2**8 = 256 perfSamples
 export default {
   data() {
     return {
@@ -135,7 +94,6 @@ export default {
       putImageData: null,
       data: null,
       randomize: true,
-      darkmode: false,
       frames: 0,
       iters: 0,
       itersFirstFrame: 1000,
@@ -169,20 +127,12 @@ export default {
       animationRequestID: null,
       aboutUrl: "https://software-artist.com/chaotic-attractor",
       advancedMode: false,
-      autoPause: false,
-      msFrameBudget: 15, // should be less than 16 for 60 fps.
+      msFrameBudget: 12, // should be less than 16 for 60 fps.
       clearScreen: true,
-      red: true,
-      green: true,
-      blue: true,
-      colors: [],
-      // tweakAmounts: [0.99, 0.999, 1.001, 1.01],
-      // ringBuffer: null,
       att: null,
-      // ringBufferSize: 30,
       framePerfs: new Array(2 ** logPerfArraySize),
       meanItersPerMillisonds: 0,
-      attractorStartTime: 0,
+      // attractorStartTime: 0,
     };
   },
 
@@ -223,23 +173,16 @@ export default {
     );
     this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
     this.data = this.imageData.data;
-    this.doPixel = this.darkmode ? this.incPixel : this.decPixel;
     this.paused = false;
     this.progressBar = this.$refs["next"].getBoundingClientRect();
     this.spinner.radius = this.progressBar.height / 2 - 4;
     this.spinner.x = this.progressBar.x + this.progressBar.width / 2;
     this.spinner.y = this.progressBar.y + this.progressBar.height / 2;
     this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
-    this.dateObject = new Date();
-    this.colors = this.darkMode ? this.additaveColors : this.subtractiveColors;
-
-    // this.ringBuffer = new RingBuffer(this.ringBufferSize);
-    // The current attractor being drawn
     this.att = new AttractorObj(true, this.width, this.height);
   },
   methods: {
     initImageData(w, h) {
-      console.log("resize: w = " + w + " h = " + h);
       this.width = w;
       this.height = h;
       this.$refs["chaos-canvas"].width = w;
@@ -267,13 +210,16 @@ export default {
       this.ctx.putImageData(this.imageData, 0, 0);
     },
     handleResize() {
-      if (this.$refs["chaos-canvas"] && !this.advancedMode) {
+      if (this.$refs["chaos-canvas"]) {
         // Has Vue loaded yet?
+        if (this.animationRequestID) {
+          window.cancelAnimationFrame(this.animationRequestID);
+        }
+        this.randomize = false;
+        this.startNewAttractor = true;
         this.initImageData(window.innerWidth, window.innerHeight);
-        this.att = new AttractorObj(
-          false,
-          window.innerWidth,
-          window.innerHeight
+        this.animationRequestID = window.requestAnimationFrame(
+          this.doAnimation
         );
       }
     },
@@ -324,6 +270,7 @@ export default {
     doAnimation: function() {
       // called every frame
       const frameStartTime = performance.now();
+      this.frames++;
       if (this.paused) {
         this.animationRequestID = window.requestAnimationFrame(
           this.doAnimation
@@ -332,11 +279,7 @@ export default {
       }
       if (this.displayDelay > 0) {
         this.displayDelay--;
-        if (this.displayDelay == 0 && this.autoPause) {
-          this.paused = true;
-        }
         this.drawProgressBar(this.progress);
-
         this.animationRequestID = window.requestAnimationFrame(
           this.doAnimation
         );
@@ -357,8 +300,8 @@ export default {
         this.displayDelay = 0;
       }
       if (
-        this.att.nTouched == this.att.prevTouched &&
-        this.att.nMaxed == this.att.prevMaxed
+        this.att.nTouched == this.prevTouched &&
+        this.att.nMaxed == this.prevMaxed
       ) {
         this.nFramesSame++;
         if (this.nFramesSame > 120) {
@@ -407,6 +350,10 @@ export default {
             (performance.now() - this.att.attractorStartTime)
       );
       // console.log(" frames per second: " + this.framesPerSecond);
+      if (this.startAnimation) {
+        // limit recurrion on the doAnimation calls to one attractor
+        window.cancelAnimationFrame(this.animationRequestID);
+      }
       this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
       return;
     },
@@ -417,10 +364,7 @@ export default {
     pauseAnimation() {
       this.paused = true;
     },
-    resetAttractor(forceNext) {
-      if (this.advancedMode && !forceNext) {
-        return;
-      }
+    resetAttractor() {
       if (this.paused) {
         this.paused = false;
         // this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
@@ -430,15 +374,6 @@ export default {
       this.randomize = true;
       this.clearScreen = true;
     },
-    // iteratePoint: function(x, y) {
-    //   let nx =
-    //     Math.sin(y * this.params[1]) -
-    //     this.params[2] * Math.sin(x * this.params[1]);
-    //   let ny =
-    //     Math.sin(x * this.params[0]) +
-    //     this.params[3] * Math.cos(y * this.params[0]);
-    //   return [nx, ny];
-    // },
 
     iterateAttractor(init, randomize, clearScreen) {
       // let nx = 0;
@@ -449,7 +384,13 @@ export default {
 
       if (init) {
         this.initAttractor(randomize);
-        this.att = new AttractorObj(randomize, this.width, this.height);
+        let savedParams = [...this.att.params];
+        this.att = new AttractorObj(
+          randomize,
+          this.width,
+          this.height,
+          savedParams
+        );
         if (clearScreen) {
           this.ctx.fillStyle = "rgba(255,255,255,1.0)";
           this.ctx.fillRect(0, 0, this.width, this.height);
@@ -457,23 +398,13 @@ export default {
           this.data = this.imageData.data;
         }
 
-        // this.randomize = true;
+        this.randomize = true;
       }
-      this.frames++;
+      // this.frames++;
       while (msElapsed < this.msFrameBudget) {
-        /* eslint-disable no-console */
-        // console.log (" x " + x + " y " + y);
         this.iters++;
         loopCount++;
-        // [this.x, this.y] = this.iteratePoint(this.x, this.y);
         [this.x, this.y] = this.att.iteratePoint(this.x, this.y, init);
-        // this.x = this.att.x;
-        // this.y = this.att.y;
-        // if (!init) {
-        //   px = this.att.pixelx(this.x);
-        //   py = this.att.pixely(this.y);
-        //   this.doPixel(px, py);
-        // }
         if ((loopCount & 0x3f) == 0) {
           msElapsed = performance.now() - frameStartTime;
         }
@@ -490,28 +421,11 @@ export default {
       // console.log(
       //   " iterations per ms: " + Math.floor(this.meanItersPerMillisonds)
       // );
-      if (init) {
-        this.xrange = this.xmax - this.xmin;
-        this.yrange = this.ymax - this.ymin;
-      } else {
+      if (!init) {
         //  copy the image data from the module's memory
-
         this.imageData.data.set(this.att.data);
         this.ctx.putImageData(this.imageData, 0, 0);
       }
-    },
-
-    toggleLightMode() {
-      this.darkmode = !this.darkmode;
-      if (this.darkmode) {
-        document.body.style.background = "black";
-      } else {
-        document.body.style.background = "white";
-      }
-      this.invert(0xff, 0xff, 0xff);
-      this.att.darkmode = this.darkmode;
-      this.imageData.data.set(this.att.data);
-      this.ctx.putImageData(this.imageData, 0, 0);
     },
     toggleMenuUp() {
       this.menuUp = !this.menuUp;
@@ -529,40 +443,21 @@ export default {
         "_blank" // <- This is what makes it open in a new window.
       );
     },
-    parseParams(which) {
-      // console.log(" param " + which + " " + this.params[which])
-      let x = parseFloat(this.paramStrings[which]);
-      if (!isNaN(x) && x !== this.params[which]) {
-        // console.log(" new parameter " + x);
-        this.params[which] = x;
-        this.paramStrings[which] = this.params[which].toString();
-      }
+    doTestAttractor() {
+      let testParam = [
+        -2.3983540752995394,
+        -1.8137134453341095,
+        0.010788338377923257,
+        1.0113015602664608,
+        0.1,
+        0.1,
+      ];
+      this.att.params = [...testParam];
+      this.randomize = false;
+      this.startNewAttractor = true;
+      this.initImageData(window.innerWidth, window.innerHeight);
+      this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
     },
-    onInputChange(which) {
-      console.log(" onInputChange " + which + " " + this.params[which]);
-    },
-
-    // tweakParams(which, howMuch) {
-    //   // console.log(" param " + which + " " + this.params[which])
-    //   this.params[which] = this.params[which] * this.tweakAmounts[howMuch];
-    //   //this.paramStrings[which] = this.params[which].toString();
-    //   this.$set(this.paramStrings, which, this.params[which].toString());
-    // },
-    // drawPaths() {
-    //   let p = [0, 0];
-    //   if (this.ringBuffer.size <= 1) {
-    //     return;
-    //   }
-    //   this.ctx.strokeStyle = "rgba(0,250,0,1.0)";
-    //   this.ctx.lineWidth = 1;
-    //   this.ctx.beginPath();
-    //   p = this.ringBuffer.peek();
-    //   this.ctx.moveTo(p[0], p[1]);
-    //   for (var point of this.ringBuffer) {
-    //     this.ctx.lineTo(point[0], point[1]);
-    //   }
-    //   this.ctx.stroke();
-    // },
 
     drawProgressBar(progress) {
       let pButton = this.$refs["next"];
@@ -626,19 +521,11 @@ export default {
 button.uiButton {
   width: 100%;
   height: 44px;
-  text-align: centered;
+  text-align: center;
   border-radius: 4px;
   background-color: Transparent;
   background-repeat: no-repeat;
   font-size: 16px;
-}
-
-button.dark {
-  color: white;
-}
-
-button.light {
-  color: black;
 }
 
 button.arrow.light {
@@ -672,7 +559,7 @@ button.arrow.dark {
 button.close {
   width: 44px;
   float: right;
-  text: centered;
+  text-align: center;
   height: 44px;
   border-radius: 2px;
   font-size: 16px;
@@ -680,7 +567,6 @@ button.close {
 }
 
 canvas {
-  display: span;
 }
 
 div.checkdiv {

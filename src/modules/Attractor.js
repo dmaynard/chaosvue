@@ -1,25 +1,23 @@
 // Attractor
 export class AttractorObj {
-  constructor(randomize, width, height, darkmode) {
+  constructor(randomize, width, height, params) {
     this.x = 0.1;
     this.y = 0.1;
     this.width = width;
     this.height = height;
-    this.frames = 0;
     this.attractorStartTime = performance.now();
     this.nTouched = 0;
     this.nMaxed = 0;
-    this.red = true;
-    this.green = true;
-    this.blue = true;
     this.state = "running";
     this.params = [0.1, 0.2, 0.3, 0.4, 0.1, 0.1];
-    this.margin = 20;
+    this.margin = Math.floor(Math.min(width, height) * 0.1);
     if (randomize) {
       this.params[0] = 3.0 * (Math.random() * 2.0 - 1.0);
       this.params[1] = 3.0 * (Math.random() * 2.0 - 1.0);
       this.params[2] = Math.random() * 2.0 - 1.0 + 0.5;
       this.params[3] = Math.random() * 2.0 - 1.0 + 0.5;
+    } else {
+      this.params = [...params];
     }
     this.xmax = -100.0;
     this.xmin = 100.0;
@@ -29,7 +27,6 @@ export class AttractorObj {
     this.progress = 0;
     this.elapsedCPU = 0;
     this.data = new Uint8ClampedArray(width * height * 4).map(() => 255); // RGBA
-    this.darkmode = darkmode;
   }
 
   iteratePoint(x, y, firstFrame) {
@@ -46,7 +43,7 @@ export class AttractorObj {
       if (ny < this.ymin) this.ymin = ny;
       if (ny > this.ymax) this.ymax = ny;
     } else {
-      // should toggle on darkmode to decPixel
+      // Assumes white background with black attractor
       this.decPixel(this.pixelx(nx), this.pixely(ny));
     }
     return [nx, ny];
@@ -73,41 +70,19 @@ export class AttractorObj {
     py = py > this.height - 1 ? this.height - 1 : py;
     return py;
   }
-  incPixel(x, y) {
-    let i = (y * this.width + x) * 4;
-    if (this.data[i] == 0 && this.data[i + 1] == 0 && this.data[i + 2] == 0) {
-      this.nTouched++;
-    }
-    if (
-      this.data[i] == 254 ||
-      this.data[i + 1] == 254 ||
-      this.data[i + 2] == 254
-    ) {
-      this.nMaxed++;
-    }
-    if (this.data[i] < 255) {
-      this.data[i] += this.red ? 1 : 0;
-      this.data[i + 1] += this.green ? 1 : 0;
-      this.data[i + 2] += this.blue ? 1 : 0;
-    }
-    // this.data[i + 3] = 255;
-  }
+
   decPixel(x, y) {
     let i = (y * this.width + x) * 4;
-    if (
-      this.data[i] == 255 &&
-      this.data[i + 1] == 255 &&
-      this.data[i + 2] == 255
-    ) {
+    if (this.data[i] == 255) {
       this.nTouched++;
     }
-    if (this.data[i] == 1 || this.data[i + 1] == 1 || this.data[i + 2] == 1) {
+    if (this.data[i] == 1) {
       this.nMaxed++;
     }
     if (this.data[i] > 0) {
-      this.data[i] += this.red ? -1 : 0;
-      this.data[i + 1] += this.green ? -1 : 0;
-      this.data[i + 2] += this.blue ? -1 : 0;
+      this.data[i] -= 1;
+      this.data[i + 1] -= 1;
+      this.data[i + 2] -= 1;
     }
     // this.data[i + 3] = 255;
   }
