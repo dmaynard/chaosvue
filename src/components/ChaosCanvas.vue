@@ -227,7 +227,6 @@ export default {
       this.x = 0.1;
       this.y = 0.1;
       this.frames = 0;
-      this.state = "running";
     },
     timeIt(context, f, ...params) {
       let elapsed = -performance.now();
@@ -285,8 +284,9 @@ export default {
         );
         return;
       }
-      this.prevMaxed = this.att.nMaxed;
-      this.prevTouched = this.att.nTouched;
+
+      this.prevMaxed = this.att ? this.att.nMaxed : 0;
+      this.prevTouched = this.att ? this.att.nTouched : 0;
 
       this.iterateAttractor(
         this.startNewAttractor,

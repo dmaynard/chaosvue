@@ -5,12 +5,11 @@ export class AttractorObj {
     this.y = 0.1;
     this.width = width;
     this.height = height;
-    this.attractorStartTime = performance.now();
     this.nTouched = 0;
     this.nMaxed = 0;
-    this.state = "running";
     this.params = [0.1, 0.2, 0.3, 0.4, 0.1, 0.1];
     this.margin = Math.floor(Math.min(width, height) * 0.1);
+    this.twiceMargin = 2 * this.margin;
     if (randomize) {
       this.params[0] = 3.0 * (Math.random() * 2.0 - 1.0);
       this.params[1] = 3.0 * (Math.random() * 2.0 - 1.0);
@@ -23,10 +22,11 @@ export class AttractorObj {
     this.xmin = 100.0;
     this.ymax = -100.0;
     this.ymin = 100.0;
-    this.nFramesSame = 0;
-    this.progress = 0;
-    this.elapsedCPU = 0;
+    this.xRanfe = 1.0;
+    this.yRange = 1.0;
+
     this.data = new Uint8ClampedArray(width * height * 4).map(() => 255); // RGBA
+    this.attractorStartTime = performance.now();
   }
 
   iteratePoint(x, y, firstFrame) {
@@ -42,6 +42,8 @@ export class AttractorObj {
       if (nx > this.xmax) this.xmax = nx;
       if (ny < this.ymin) this.ymin = ny;
       if (ny > this.ymax) this.ymax = ny;
+      this.xRange = this.xmax - this.xmin;
+      this.yRange = this.ymax - this.ymin;
     } else {
       // Assumes white background with black attractor
       this.decPixel(this.pixelx(nx), this.pixely(ny));
@@ -51,8 +53,7 @@ export class AttractorObj {
   pixelx(x) {
     let px =
       Math.floor(
-        ((x - this.xmin) / (this.xmax - this.xmin)) *
-          (this.width - 2 * this.margin)
+        ((x - this.xmin) / this.xRange) * (this.width - this.twiceMargin)
       ) + this.margin;
     // if ((px < 0) || (px > this.width)) console.log(" bad x " + px + " " + x);
     px = px < 0 ? 0 : px;
@@ -62,8 +63,7 @@ export class AttractorObj {
   pixely(y) {
     let py =
       Math.floor(
-        ((y - this.ymin) / (this.ymax - this.ymin)) *
-          (this.height - 2 * this.margin)
+        ((y - this.ymin) / this.yRange) * (this.height - this.twiceMargin)
       ) + this.margin;
     // if ((px < 0) || (px > this.width)) console.log(" bad x " + px + " " + x);
     py = py < 0 ? 0 : py;
