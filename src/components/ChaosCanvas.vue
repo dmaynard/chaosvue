@@ -132,7 +132,6 @@ export default {
       att: null,
       framePerfs: new Array(2 ** logPerfArraySize),
       meanItersPerMillisonds: 0,
-      // attractorStartTime: 0,
     };
   },
 
@@ -222,11 +221,6 @@ export default {
           this.doAnimation
         );
       }
-    },
-    initAttractor() {
-      this.x = 0.1;
-      this.y = 0.1;
-      this.frames = 0;
     },
     timeIt(context, f, ...params) {
       let elapsed = -performance.now();
@@ -385,7 +379,7 @@ export default {
       let loopCount = 0;
 
       if (init) {
-        this.initAttractor(randomize);
+        this.frames = 0;
         let savedParams = [...this.att.params];
         this.att = new AttractorObj(
           randomize,
@@ -521,33 +515,6 @@ button.uiButton {
   font-size: 16px;
 }
 
-button.arrow.light {
-  display: block;
-  color: black;
-  float: left;
-  width: 35px;
-  height: 40px;
-  margin-top: 0;
-  padding-top: 2px;
-  margin-bottom: 10px;
-  background-color: Transparent;
-  font-size: 14px;
-  text-align: center;
-}
-
-button.arrow.dark {
-  display: block;
-  color: white;
-  float: left;
-  width: 35px;
-  height: 40px;
-  margin-top: 0;
-  padding-top: 2px;
-  margin-bottom: 10px;
-  background-color: Transparent;
-  font-size: 14px;
-  text-align: center;
-}
 
 button.close {
   width: 44px;
@@ -564,42 +531,6 @@ canvas {
 
 div.checkdiv {
   height: 40px;
-}
-
-label.labellight {
-  color: black;
-  display: inline-block;
-  width: 120px;
-}
-
-label.labeldark {
-  color: white;
-  display: inline-block;
-  width: 120px;
-}
-
-input.numInputDark {
-  height: 20px;
-  width: 100%;
-  padding: 0px;
-  border: 0px;
-  text-align: center;
-  color: white;
-  margin-bottom: 0;
-  padding-bottom: 0px;
-  background-color: Transparent;
-}
-
-input.numInputLight {
-  height: 20px;
-  width: 100%;
-  padding: 0px;
-  border: 0px;
-  text-align: center;
-  color: black;
-  margin-bottom: 0;
-  padding-bottom: 0px;
-  background-color: Transparent;
 }
 
 input[type="checkbox"] {
