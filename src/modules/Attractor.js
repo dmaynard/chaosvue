@@ -4,6 +4,8 @@ export class AttractorObj {
     this.x = 0.1;
     this.y = 0.1;
     this.width = width;
+    this.iters = 0;
+    this.loopCount = 0;
     this.height = height;
     this.nTouched = 0;
     this.nMaxed = 0;
@@ -26,7 +28,20 @@ export class AttractorObj {
     this.yRange = 1.0;
 
     this.data = new Uint8ClampedArray(width * height * 4).map(() => 255); // RGBA
-    this.attractorStartTime = performance.now();
+  }
+  calculateFrame ( budget, firstFrame) {
+      let startTime = performance.now();
+      let msElapsed = 0;
+      let loopCount = 0;
+      while (msElapsed < budget) {
+        this.iters++;
+        loopCount++;
+        [this.x, this.y] = this.iteratePoint(this.x, this.y, firstFrame);
+        if ((loopCount & 0x3f) == 0) {
+          msElapsed = performance.now() - startTime;
+        }
+      }
+    return loopCount;  // 
   }
 
   iteratePoint(x, y, firstFrame) {

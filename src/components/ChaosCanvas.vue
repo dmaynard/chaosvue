@@ -127,7 +127,7 @@ export default {
       animationRequestID: null,
       aboutUrl: "https://software-artist.com/chaotic-attractor",
       advancedMode: false,
-      msFrameBudget: 12, // should be less than 16 for 60 fps.
+      msFrameBudget: 14, // should be less than 16 for 60 fps.
       clearScreen: true,
       att: null,
       framePerfs: new Array(2 ** logPerfArraySize),
@@ -287,6 +287,9 @@ export default {
 
       this.prevMaxed = this.att ? this.att.nMaxed : 0;
       this.prevTouched = this.att ? this.att.nTouched : 0;
+      if (this.startNewAttractor) {
+        this.startTime = performance.now();
+      }
 
       this.iterateAttractor(
         this.startNewAttractor,
@@ -347,7 +350,7 @@ export default {
       this.framesPerSecond = Math.floor(
         0.5 +
           (this.frames * 1000) /
-            (performance.now() - this.att.attractorStartTime)
+            (performance.now() - this.startTime)
       );
       // console.log(" frames per second: " + this.framesPerSecond);
       if (this.startAnimation) {
@@ -378,8 +381,7 @@ export default {
     iterateAttractor(init, randomize, clearScreen) {
       // let nx = 0;
       // let ny = 0;
-      let frameStartTime = performance.now();
-      let msElapsed = 0;
+      let msElapsed =1;
       let loopCount = 0;
 
       if (init) {
@@ -400,18 +402,9 @@ export default {
 
         this.randomize = true;
       }
-      // this.frames++;
-      while (msElapsed < this.msFrameBudget) {
-        this.iters++;
-        loopCount++;
-        [this.x, this.y] = this.att.iteratePoint(this.x, this.y, init);
-        if ((loopCount & 0x3f) == 0) {
-          msElapsed = performance.now() - frameStartTime;
-        }
-      }
-      // console.log(loopCount + " iters in " + msElapsed + " msec");
-      // record iterations per millisecond
-      // the "&" below is faster than a mod % operation
+      let startTime = performance.now();
+      loopCount = this.att.calculateFrame( this.msFrameBudget, init);
+      msElapsed = performance.now() - startTime;
       this.framePerfs[this.frames & (2 ** logPerfArraySize - 1)] =
         loopCount / msElapsed;
 
