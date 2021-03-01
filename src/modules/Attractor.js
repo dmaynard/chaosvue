@@ -10,8 +10,6 @@ export class AttractorObj {
     this.nTouched = 0;
     this.nMaxed = 0;
     this.params = [0.1, 0.2, 0.3, 0.4, 0.1, 0.1];
-    this.margin = Math.floor(Math.min(width, height) * 0.1);
-    this.twiceMargin = 2 * this.margin;
     if (randomize) {
       this.params[0] = 3.0 * (Math.random() * 2.0 - 1.0);
       this.params[1] = 3.0 * (Math.random() * 2.0 - 1.0);
@@ -29,19 +27,19 @@ export class AttractorObj {
 
     this.data = new Uint8ClampedArray(width * height * 4).map(() => 255); // RGBA
   }
-  calculateFrame ( budget, firstFrame) {
-      let startTime = performance.now();
-      let msElapsed = 0;
-      let loopCount = 0;
-      while (msElapsed < budget) {
-        this.iters++;
-        loopCount++;
-        [this.x, this.y] = this.iteratePoint(this.x, this.y, firstFrame);
-        if ((loopCount & 0x3f) == 0) {
-          msElapsed = performance.now() - startTime;
-        }
+  calculateFrame(budget, firstFrame) {
+    let startTime = performance.now();
+    let msElapsed = 0;
+    let loopCount = 0;
+    while (msElapsed < budget) {
+      this.iters++;
+      loopCount++;
+      [this.x, this.y] = this.iteratePoint(this.x, this.y, firstFrame);
+      if ((loopCount & 0x3f) == 0) {
+        msElapsed = performance.now() - startTime;
       }
-    return loopCount;  // 
+    }
+    return loopCount; //
   }
 
   iteratePoint(x, y, firstFrame) {
@@ -66,20 +64,14 @@ export class AttractorObj {
     return [nx, ny];
   }
   pixelx(x) {
-    let px =
-      Math.floor(
-        ((x - this.xmin) / this.xRange) * (this.width - this.twiceMargin)
-      ) + this.margin;
+    let px = Math.floor(((x - this.xmin) / this.xRange) * this.width);
     // if ((px < 0) || (px > this.width)) console.log(" bad x " + px + " " + x);
     px = px < 0 ? 0 : px;
     px = px > this.width - 1 ? this.width - 1 : px;
     return px;
   }
   pixely(y) {
-    let py =
-      Math.floor(
-        ((y - this.ymin) / this.yRange) * (this.height - this.twiceMargin)
-      ) + this.margin;
+    let py = Math.floor(((y - this.ymin) / this.yRange) * this.height);
     // if ((px < 0) || (px > this.width)) console.log(" bad x " + px + " " + x);
     py = py < 0 ? 0 : py;
     py = py > this.height - 1 ? this.height - 1 : py;

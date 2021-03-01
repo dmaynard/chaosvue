@@ -1,6 +1,10 @@
 ª<template>
   <div class="chaos-canvas-wrapper">
-    <canvas ref="chaos-canvas" @click="resetAttractor(false)"></canvas>
+    <canvas
+      id="mycanvas"
+      ref="chaos-canvas"
+      @click="resetAttractor(false)"
+    ></canvas>
     <span class="menu-wrapper" style="width: 150px ">
       <div v-if="menuUp">
         <button class="close labeltag" v-on:click="toggleMenuUp">
@@ -24,6 +28,20 @@
         <button ref="next" class="uiButton" v-on:click="resetAttractor(true)">
           Next
         </button>
+        <myprogressbar
+          size="medium"
+          :bar-color="pbarcolor"
+          :bg-color="pbgcolor"
+          :val="progress"
+        >
+        </myprogressbar>
+        <myprogressbar
+          size="medium"
+          :bar-color="tbarcolor"
+          :bg-color="pbgcolor"
+          :val="countdownpct"
+        >
+        </myprogressbar>
 
         <div class="checkdiv">
           <input
@@ -41,7 +59,7 @@
             :value="meanItersPerMillisonds"
             :width="150"
             :height="100"
-            :maxValue="1500"
+            :maxValue="3000"
           />
           <label align="center" for="Iterations">Iterations/ms</label>
           <vue-speedometer
@@ -52,9 +70,6 @@
             :maxValue="60"
           />
           <label align="center" for="Frames">Frames/second</label>
-          <button class="uiButton" v-on:click="doAbout">
-            About
-          </button>
           <button class="uiButton" v-on:click="doTestAttractor">
             Test
           </button>
@@ -79,11 +94,11 @@
 /* eslint-disable no-console */
 
 // Todo eliminate extraneous UI and functions
-
+import myprogressbar from "vue-simple-progress";
 import VueSpeedometer from "vue-speedometer";
 // import { RingBuffer } from "../modules/RingBuffer";
 import { AttractorObj } from "../modules/Attractor";
-const logPerfArraySize = 6; // 2**8 = 256 perfSamples
+const logPerfArraySize = 6; // 2**6 = 64 perfSamples
 export default {
   data() {
     return {
@@ -101,6 +116,10 @@ export default {
       startNewAttractor: true,
       displayDelayDefault: 600,
       displayDelay: 0,
+      pbarcolor: "rgba(0,200,0,0.5)",
+      tbarcolor: "rgba(200,200,0,0.5)",
+
+      pbgcolor: "rgba(255, 225, 255, 0.0)",
       elapsedCPU: 0,
       enoughMaxed: 10.0,
       progress: 0,
@@ -132,6 +151,7 @@ export default {
       att: null,
       framePerfs: new Array(2 ** logPerfArraySize),
       meanItersPerMillisonds: 0,
+      countdownpct: 0,
     };
   },
 
@@ -148,7 +168,7 @@ export default {
 
   mounted() {
     // We can't access the rendering context until the canvas is mounted to the DOM.
-    // Once we have it, provide it to all child components.
+    //  Once we have it, provide it to all child components.
     this.$refs["chaos-canvas"].width = this.$refs[
       "chaos-canvas"
     ].parentElement.clientWidth;
@@ -179,6 +199,8 @@ export default {
     this.spinner.y = this.progressBar.y + this.progressBar.height / 2;
     this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
     this.att = new AttractorObj(true, this.width, this.height);
+    // this.pbarcolor = "rgba(0, 225, 0, 0.3)";
+    // this.pbgcolor = "rgba(255, 225, 255, 0.3)";
   },
   methods: {
     initImageData(w, h) {
@@ -272,7 +294,7 @@ export default {
       }
       if (this.displayDelay > 0) {
         this.displayDelay--;
-        this.drawProgressBar(this.progress);
+        this.calculateProgress(this.displayDelay);
         this.animationRequestID = window.requestAnimationFrame(
           this.doAnimation
         );
@@ -317,7 +339,7 @@ export default {
 
       let percentMaxed = (this.att.nMaxed * 100) / this.att.nTouched;
       this.progress = Math.min((percentMaxed * 100) / this.enoughMaxed, 100);
-      this.drawProgressBar(this.progress);
+      this.calculateProgress(this.displayDelay);
       if (percentMaxed > this.enoughMaxed && !this.advancedMode) {
         this.startNewAttractor = true;
         this.displayDelay =
@@ -336,15 +358,12 @@ export default {
         // console.log(" Enough ");
       }
 
-      this.drawProgressBar(this.progress);
       this.elapsedCPU += performance.now() - frameStartTime;
       if (this.elapsedCPU < 0) {
         console.log(" impossible ");
       }
       this.framesPerSecond = Math.floor(
-        0.5 +
-          (this.frames * 1000) /
-            (performance.now() - this.startTime)
+        0.5 + (this.frames * 1000) / (performance.now() - this.startTime)
       );
       // console.log(" frames per second: " + this.framesPerSecond);
       if (this.startAnimation) {
@@ -375,7 +394,7 @@ export default {
     iterateAttractor(init, randomize, clearScreen) {
       // let nx = 0;
       // let ny = 0;
-      let msElapsed =1;
+      let msElapsed = 1;
       let loopCount = 0;
 
       if (init) {
@@ -397,7 +416,7 @@ export default {
         this.randomize = true;
       }
       let startTime = performance.now();
-      loopCount = this.att.calculateFrame( this.msFrameBudget, init);
+      loopCount = this.att.calculateFrame(this.msFrameBudget, init);
       msElapsed = performance.now() - startTime;
       this.framePerfs[this.frames & (2 ** logPerfArraySize - 1)] =
         loopCount / msElapsed;
@@ -445,66 +464,28 @@ export default {
       this.initImageData(window.innerWidth, window.innerHeight);
       this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
     },
-
-    drawProgressBar(progress) {
-      let pButton = this.$refs["next"];
-      if (pButton) {
-        // the button is showing
-        if (!this.advancedMode) {
-          if (this.displayDelay == 0) {
-            this.ctx.fillStyle = "rgba(0,225,0,0.3)";
-            this.ctx.fillRect(
-              this.progressBar.x,
-              this.progressBar.y + 1,
-              (progress * pButton.clientWidth) / 100,
-              pButton.clientHeight
-            );
-          } else {
-            this.ctx.fillStyle = "rgba(0,225,0,0.5)";
-            this.ctx.fillRect(
-              this.progressBar.x,
-              this.progressBar.y + 1,
-              pButton.clientWidth,
-              pButton.clientHeight
-            );
-            this.ctx.fillStyle = "rgba(225,255,0,0.5)";
-            this.ctx.fillRect(
-              this.progressBar.x,
-              this.progressBar.y + 1,
-              ((this.displayDelayDefault - this.displayDelay) /
-                this.displayDelayDefault) *
-                pButton.clientWidth,
-              pButton.clientHeight
-            );
-          }
-        } else {
-          this.ctx.strokeStyle = "rgba(0,250,0,0.3)";
-          this.ctx.lineWidth = 4;
-
-          let angleInc = this.frameAngle * (this.frames % 120);
-          let startAngle = angleInc;
-          for (let i = 0; i < 3; i++) {
-            this.ctx.beginPath();
-            this.ctx.arc(
-              this.spinner.x,
-              this.spinner.y,
-              this.spinner.radius,
-              startAngle,
-              startAngle + Math.PI / 3
-            );
-            this.ctx.stroke();
-            startAngle = startAngle + (2.0 * Math.PI) / 3.0;
-          }
-        }
-      }
+    calculateProgress(delay) {
+      this.countdownpct =
+        delay == 0
+          ? 0
+          : ((this.displayDelayDefault - delay) * 100) /
+            this.displayDelayDefault;
     },
   },
   components: {
     VueSpeedometer,
+    myprogressbar,
   },
 };
 </script>
 <style scoped>
+#mycanvas {
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  width: 90%;
+  height: 90%;
+}
 button.uiButton {
   width: 100%;
   height: 44px;
@@ -514,7 +495,6 @@ button.uiButton {
   background-repeat: no-repeat;
   font-size: 16px;
 }
-
 
 button.close {
   width: 44px;
