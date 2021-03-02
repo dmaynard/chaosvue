@@ -36,6 +36,7 @@
         >
         </myprogressbar>
         <myprogressbar
+          id="lastprogressbar"
           size="medium"
           :bar-color="tbarcolor"
           :bg-color="pbgcolor"
@@ -43,17 +44,7 @@
         >
         </myprogressbar>
 
-        <div class="checkdiv">
-          <input
-            class="inline"
-            type="checkbox"
-            id="advanceMode"
-            background-color="Transparent"
-            v-model="advancedMode"
-          />
-          <label class="inline" for="advanceMode"> Show Speed</label>
-        </div>
-        <div v-if="advancedMode">
+        <div>
           <vue-speedometer
             id="Iterations"
             :value="meanItersPerMillisonds"
@@ -61,15 +52,9 @@
             :height="100"
             :maxValue="3000"
           />
-          <label align="center" for="Iterations">Iterations/ms</label>
-          <vue-speedometer
-            id="Frames"
-            :value="framesPerSecond"
-            :width="150"
-            :height="100"
-            :maxValue="60"
-          />
-          <label align="center" for="Frames">Frames/second</label>
+          <label id="itersperms" align="center" for="Iterations"
+            >Iterations per ms
+          </label>
           <button class="uiButton" v-on:click="doTestAttractor">
             Test
           </button>
@@ -111,13 +96,12 @@ export default {
       randomize: true,
       frames: 0,
       iters: 0,
-      itersFirstFrame: 1000,
       paused: false,
       startNewAttractor: true,
       displayDelayDefault: 600,
       displayDelay: 0,
       pbarcolor: "rgba(0,200,0,0.5)",
-      tbarcolor: "rgba(200,200,0,0.5)",
+      tbarcolor: "rgba(400,200,0,0.5)",
 
       pbgcolor: "rgba(255, 225, 255, 0.0)",
       elapsedCPU: 0,
@@ -144,9 +128,7 @@ export default {
       },
       frameAngle: Math.PI / 3.0 / 60.0,
       animationRequestID: null,
-      aboutUrl: "https://software-artist.com/chaotic-attractor",
-      advancedMode: false,
-      msFrameBudget: 14, // should be less than 16 for 60 fps.
+      msFrameBudget: 13, // should be less than 16 for 60 fps.
       clearScreen: true,
       att: null,
       framePerfs: new Array(2 ** logPerfArraySize),
@@ -325,13 +307,10 @@ export default {
         this.nFramesSame++;
         if (this.nFramesSame > 120) {
           // console.log("no changes for 120 frames, abort or pause this attractor")
-          if (this.advancedMode) {
-            this.paused = true;
-          } else {
-            this.startNewAttractor = true;
-            this.progress = 100;
-            this.displayDelay = this.displayDelayDefault;
-          }
+
+          this.startNewAttractor = true;
+          this.progress = 100;
+          this.displayDelay = this.displayDelayDefault;
         }
       } else {
         this.nFramesSame = 0;
@@ -340,7 +319,7 @@ export default {
       let percentMaxed = (this.att.nMaxed * 100) / this.att.nTouched;
       this.progress = Math.min((percentMaxed * 100) / this.enoughMaxed, 100);
       this.calculateProgress(this.displayDelay);
-      if (percentMaxed > this.enoughMaxed && !this.advancedMode) {
+      if (percentMaxed > this.enoughMaxed) {
         this.startNewAttractor = true;
         this.displayDelay =
           this.att.nTouched > 5000 ? this.displayDelayDefault : 0;
@@ -488,20 +467,31 @@ export default {
 }
 button.uiButton {
   width: 100%;
-  height: 44px;
+  margin-bottom: 4px;
+  height: 30px;
   text-align: center;
-  border-radius: 4px;
-  background-color: Transparent;
-  background-repeat: no-repeat;
+  border: solid 2px gray;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0);
   font-size: 16px;
+}
+#itersperms {
+  display: block;
+  margin-bottom: 10px;
+}
+#lastprogressbar {
+  display: block;
+  margin-bottom: 10px;
 }
 
 button.close {
-  width: 44px;
+  width: 30px;
+  margin-bottom: 4px;
+  border: solid 2px gray;
   float: right;
   text-align: center;
-  height: 44px;
-  border-radius: 2px;
+  height: 30px;
+  border-radius: 6px;
   font-size: 16px;
   background-color: Transparent;
 }
