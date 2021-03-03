@@ -53,7 +53,7 @@
             :maxValue="3000"
           />
           <label id="itersperms" align="center" for="Iterations"
-            >Iterations per ms
+            >Pixels per ms
           </label>
           <button class="uiButton" v-on:click="doTestAttractor">
             Test
@@ -63,6 +63,7 @@
       <div v-else>
         <span>
           <button
+            id="menubutton"
             style="float: left"
             class="close labeltag"
             v-on:click="toggleMenuUp"
@@ -70,6 +71,27 @@
             &#9776;
           </button>
         </span>
+      </div>
+      <div v-if="menuUp"></div>
+      <div v-else>
+        <myprogressbar
+          class="shorty"
+          id="firstshortprogressbar"
+          size="small"
+          :bar-color="pbarcolor"
+          :bg-color="pbgcolor"
+          :val="progress"
+        >
+        </myprogressbar>
+        <myprogressbar
+          class="shorty"
+          id="secondprogressbar"
+          size="small"
+          :bar-color="tbarcolor"
+          :bg-color="pbgcolor"
+          :val="countdownpct"
+        >
+        </myprogressbar>
       </div>
     </span>
   </div>
@@ -100,14 +122,15 @@ export default {
       startNewAttractor: true,
       displayDelayDefault: 600,
       displayDelay: 0,
+
       pbarcolor: "rgba(0,200,0,0.5)",
-      tbarcolor: "rgba(400,200,0,0.5)",
+      tbarcolor: "rgba(240,180,0,0.5)",
 
       pbgcolor: "rgba(255, 225, 255, 0.0)",
       elapsedCPU: 0,
-      enoughMaxed: 10.0,
+      enoughMaxed: 10.0, // quit when 10% of the pixels touched have maxed out
       progress: 0,
-      menuUp: true,
+      menuUp: false,
       prevMaxed: 0,
       prevTouched: 0,
       nFramesSame: 0,
@@ -115,18 +138,6 @@ export default {
         width: 0,
         height: 0,
       },
-      progressBar: {
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
-      },
-      spinner: {
-        x: 0,
-        y: 0,
-        radius: 0,
-      },
-      frameAngle: Math.PI / 3.0 / 60.0,
       animationRequestID: null,
       msFrameBudget: 13, // should be less than 16 for 60 fps.
       clearScreen: true,
@@ -175,10 +186,7 @@ export default {
     this.imageData = this.ctx.getImageData(0, 0, this.width, this.height);
     this.data = this.imageData.data;
     this.paused = false;
-    this.progressBar = this.$refs["next"].getBoundingClientRect();
-    this.spinner.radius = this.progressBar.height / 2 - 4;
-    this.spinner.x = this.progressBar.x + this.progressBar.width / 2;
-    this.spinner.y = this.progressBar.y + this.progressBar.height / 2;
+
     this.animationRequestID = window.requestAnimationFrame(this.doAnimation);
     this.att = new AttractorObj(true, this.width, this.height);
     // this.pbarcolor = "rgba(0, 225, 0, 0.3)";
@@ -483,8 +491,19 @@ button.uiButton {
   display: block;
   margin-bottom: 10px;
 }
+#firstshortprogressbar {
+  margin-top: 35px;
+}
 
+.shorty {
+  width: 35px;
+  margin-bottom: 2px;
+}
+#shortprogressbar {
+  display: block;
+}
 button.close {
+  display: block;
   width: 30px;
   margin-bottom: 4px;
   border: solid 2px gray;
@@ -495,7 +514,9 @@ button.close {
   font-size: 16px;
   background-color: Transparent;
 }
-
+#menubutton {
+  display: block;
+}
 canvas {
 }
 
