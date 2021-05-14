@@ -50,7 +50,7 @@
             :value="meanItersPerMillisonds"
             :width="150"
             :height="100"
-            :maxValue="3000"
+            :maxValue="4000"
           />
           <label id="itersperms" align="center" for="Iterations"
             >Pixels per ms
