@@ -485,6 +485,7 @@ button.uiButton {
 }
 #itersperms {
   display: block;
+  background: rgba(255, 255, 255, 255);
   margin-bottom: 10px;
 }
 #lastprogressbar {
