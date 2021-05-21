@@ -113,32 +113,6 @@
           >
         </div>
         <div v-if="advancedMode">
-          <vue-speedometer
-            id="Iterations"
-            :value="meanItersPerMillisonds"
-            :width="150"
-            :height="100"
-            :maxValue="800"
-          />
-          <label
-            align="center"
-            for="Iterations"
-            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
-            >Iterations/ms</label
-          >
-          <vue-speedometer
-            id="Frames"
-            :value="framesPerSecond"
-            :width="150"
-            :height="100"
-            :maxValue="60"
-          />
-          <label
-            align="center"
-            for="Frames"
-            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
-            >Frames/second</label
-          >
           <button
             ref="redraw"
             class="uiButton"
@@ -344,6 +318,32 @@
               &#x27F0;
             </button>
           </span>
+          <vue-speedometer
+            id="Iterations"
+            :value="meanItersPerMillisonds"
+            :width="150"
+            :height="100"
+            :maxValue="800"
+          />
+          <label
+            align="center"
+            for="Iterations"
+            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
+            >Iterations/ms</label
+          >
+          <vue-speedometer
+            id="Frames"
+            :value="framesPerSecond"
+            :width="150"
+            :height="100"
+            :maxValue="60"
+          />
+          <label
+            align="center"
+            for="Frames"
+            v-bind:class="{ labeldark: darkmode, labellight: !darkmode }"
+            >Frames/second</label
+          >
         </div>
       </div>
       <div v-else>
